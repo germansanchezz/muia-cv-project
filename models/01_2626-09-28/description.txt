@@ -1,0 +1,1 @@
+Modelo entrenado con `ffNN_example.ipynb`, utilizando la arquitectura y los hiperparámetros originales del notebook, sin realizar modificaciones.
