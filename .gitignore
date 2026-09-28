@@ -1,0 +1,6 @@
+# Archivos checkpoint de Jupyter Notebook
+PROJECT/.ipynb_checkpoints/
+
+# NO subir carpetas de datos
+xview_recognition/
+xview_detection/
