@@ -1,0 +1,49 @@
+Experiment 04: baseline ffNN with normalized inputs
+
+Hypothesis:
+- Test whether normalizing image values to [0, 1] improves the original
+  baseline architecture without adding hidden layers or changing the optimizer.
+
+Architecture:
+- Flatten(input_shape=(224, 224, 3)).
+- ReLU activation.
+- Dense(13).
+- Softmax activation.
+
+Changed from experiment_01:
+- Training, validation and test images are normalized to [0, 1].
+
+Kept fixed for a fair comparison:
+- Adam optimizer, learning rate 1e-3.
+- beta_1=0.9, beta_2=0.999, amsgrad=True, clipnorm=1.0.
+- Batch size: 16.
+- Maximum epochs: 20.
+- Same train/validation split.
+- Original callbacks monitoring val_accuracy.
+
+Results:
+- Training completed all 20 epochs.
+- Best validation model: epoch 20.
+- Best validation accuracy: 41.280%.
+- Mean Accuracy: 41.280%.
+- Mean Recall: 34.049%.
+- Mean Precision: 36.760%.
+
+Class-level observations:
+- Building recall decreased to 55.923%, compared with 82.920% in
+  experiment_03, indicating less concentration on that class.
+- Small car remained strong, with 78.419% recall.
+- All 13 classes obtained non-zero recall, including Fishing vessel,
+  Helipad and Pylon.
+- The largest remaining weaknesses were Truck (8.714% recall), Helipad
+  (11.111%), Storage tank (15.789%) and Motorboat (19.266%).
+
+Conclusions:
+- Normalizing the input values while keeping the original baseline architecture
+  improved all three comparison metrics relative to experiment_01:
+  accuracy increased from 38.560% to 41.280%, recall from 30.950% to 34.049%
+  and precision from 31.433% to 36.760%.
+- It also clearly improved over experiment_02 and experiment_03 in Mean
+  Accuracy, Mean Recall and Mean Precision.
+- This is currently the best configuration and should be treated as the
+  reference model for the next experiment.

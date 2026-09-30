@@ -1,0 +1,41 @@
+Experiment 02: ffNN with one hidden dense layer
+
+Change from baseline:
+- Added Dense(64, activation="relu") before the 13-class output layer.
+
+All remaining parameters are kept equal to experiment_01 for a fair comparison:
+- Adam, learning rate 1e-3, beta_1=0.9, beta_2=0.999, amsgrad=True, clipnorm=1.0.
+- Batch size 16 and maximum 20 epochs.
+- Same train/validation split and original callbacks.
+
+Results:
+- Training completed all 20 epochs.
+- Best validation model: epoch 1.
+- Best validation accuracy: 19.360%.
+- Mean Accuracy: 19.360%.
+- Mean Recall: 7.692%.
+- Mean Precision: 1.489%.
+
+Conclusions:
+- The model did not improve after the first epoch. Training accuracy remained
+  close to 19.15% and validation accuracy remained at 19.36%.
+- The confusion matrix shows that the model predicted Building for all
+  validation samples: Building recall was 100%, while every other class had
+  zero recall.
+- Compared with experiment_01, the metrics decreased substantially. Adding a
+  Dense(64) layer with the original input scale and learning rate was not a
+  useful improvement.
+- The result suggests that the experiment is dominated by an optimization or
+  input-scale problem rather than by insufficient network depth. Continuing to
+  add larger dense layers would not be justified from this result.
+
+Adjustment for experiment_03:
+- Keep a single hidden Dense(64, activation="relu") layer so that the effect
+  of the training changes can be compared with experiment_02.
+- Normalize image values to [0, 1].
+- Reduce the Adam learning rate from 1e-3 to 1e-4.
+- Increase the maximum number of epochs to 50, but use stricter stopping:
+  EarlyStopping on val_accuracy with patience=5 and min_delta=1e-3.
+- Use ReduceLROnPlateau with patience=2 so that the learning rate changes
+  earlier when validation accuracy stops improving.
+- Keep the dataset split and batch size unchanged.

@@ -1,0 +1,41 @@
+Experiment 01: baseline ffNN
+
+Dataset:
+- xview_recognition.
+- 18,746 training samples.
+- 13 object categories.
+- Images resized to 224x224.
+- Training/validation split: 90%/10%, random_state=1, shuffle=True.
+
+Architecture:
+- Flatten(input_shape=(224, 224, 3)).
+- ReLU activation.
+- Dense(13).
+- Softmax activation.
+
+Optimization:
+- Adam optimizer.
+- Learning rate: 1e-3.
+- beta_1=0.9, beta_2=0.999.
+- amsgrad=True.
+- clipnorm=1.0.
+- Batch size: 16.
+- Maximum epochs: 20.
+
+Callbacks:
+- ModelCheckpoint monitoring val_accuracy.
+- ReduceLROnPlateau monitoring val_accuracy, factor=0.1, patience=10.
+- EarlyStopping monitoring val_accuracy, patience=40.
+- TerminateOnNaN.
+
+Validation results:
+- Best validation model: epoch 11.
+- Best validation accuracy: 38.560%.
+- Mean Accuracy: 38.560%.
+- Mean Recall: 30.950%.
+- Mean Precision: 31.433%.
+
+Reference validation metrics for comparison with Codabench:
+- Mean Accuracy: 38.560%.
+- Mean Recall: 30.950%.
+- Mean Precision: 31.433%.

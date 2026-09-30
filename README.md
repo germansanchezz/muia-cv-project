@@ -14,28 +14,51 @@ dentro de `PROJECT/`. La estructura mínima esperada es:
 ```text
 .
 ├── PROJECT/
-│   ├── xview_recognition/
-│   ├── xview_detection/
-│   └── ffNN_example.ipynb
+│   ├── common/
+│   │   └── ffnn_challenge_utils.py
+│   ├── experiments/
+│   │   └── fnn_challenge/
+│   │       ├── ffnn_challenge_baseline.ipynb
+│   │       └── experiment_01/
+│   │           ├── ffnn_01.ipynb
+│   │           ├── model.keras
+│   │           ├── prediction.json
+│   │           └── description.txt
+│   └── xview_recognition/
 └── models/
 ```
 
-El notebook `PROJECT/ffNN_example.ipynb` utiliza rutas relativas, por lo que
-debe ejecutarse desde la carpeta `PROJECT/`.
+Los notebooks de `PROJECT/experiments/fnn_challenge/` importan las funciones
+comunes desde `PROJECT/common/` y localizan el repositorio automáticamente.
+No dependen de ejecutar el notebook desde una carpeta concreta.
 
 ## Ejecución y resultados
 
-Al ejecutar `PROJECT/ffNN_example.ipynb`, el experimento genera los archivos
-`model.keras` y `prediction.json` dentro de `PROJECT/`.
+Cada experimento tiene su propio notebook y su propia carpeta de resultados.
+Por ejemplo, `ffnn_01.ipynb` guarda `model.keras` y `prediction.json` dentro de
+`PROJECT/experiments/fnn_challenge/experiment_01/`.
 
-Cuando termines un experimento:
+> **Warning:** Es muy importante cambiar `EXPERIMENT_DIR` en la primera celda
+> del notebook antes de ejecutar cada experimento. La ruta debe apuntar a la
+> carpeta del experimento actual para no sobrescribir los resultados de otra
+> prueba.
 
-1. Crea una carpeta dentro de `models/` con un nombre que identifique el
-   experimento, por ejemplo `models/01_2026-09-28/`.
-2. Mueve `PROJECT/model.keras` y `PROJECT/prediction.json` a esa carpeta.
-3. Añade, si es necesario, una descripción de la configuración y los
-   resultados del experimento en un archivo `description.txt`.
+### Preparar y ejecutar un experimento
+
+1. Crea una carpeta dentro de `PROJECT/experiments/fnn_challenge/` con un
+   nombre que identifique el experimento, por ejemplo `experiment_02/`.
+2. Copia `ffnn_challenge_baseline.ipynb` dentro de esa carpeta y renómbralo.
+3. Cambia `EXPERIMENT_DIR` en la primera celda para que apunte a la nueva
+   carpeta, ajusta la configuración del experimento y ejecuta el notebook.
+
+### Después de ejecutar
+
+1. Comprueba que se han generado `model.keras` y `prediction.json` dentro de
+   la carpeta del experimento.
+2. Añade o completa `description.txt` con la arquitectura, los parámetros de
+   entrenamiento y los resultados obtenidos.
 
 De esta forma, cada entrenamiento queda almacenado de manera independiente y
 los archivos generados por el siguiente experimento no sobrescriben los
-resultados anteriores.
+resultados anteriores. La carpeta `models/` conserva los resultados históricos
+que ya existían antes de esta reorganización.

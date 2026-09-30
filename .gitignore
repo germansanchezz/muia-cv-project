@@ -1,5 +1,10 @@
 # Archivos checkpoint de Jupyter Notebook
-PROJECT/.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# caché Python
+**/__pycache__/
+
+**/model.keras
 
 # NO subir carpetas de datos
 xview_recognition/

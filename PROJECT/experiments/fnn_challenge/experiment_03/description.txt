@@ -1,0 +1,48 @@
+Experiment 03: ffNN with controlled optimization and normalized inputs
+
+Change from baseline:
+- Keep one hidden Dense(64, activation="relu") layer, following experiment_02.
+- Normalize image values to [0, 1].
+- Reduce the Adam learning rate to 1e-4.
+- Increase the maximum number of epochs to 50.
+- Stop early when validation accuracy does not improve sufficiently.
+
+Fixed parameters:
+- Adam beta_1=0.9, beta_2=0.999, amsgrad=True, clipnorm=1.0.
+- Batch size 16.
+- Same train/validation split as the previous experiments.
+- ReduceLROnPlateau on val_accuracy, factor=0.1, patience=2.
+- EarlyStopping on val_accuracy, patience=5, min_delta=1e-3,
+  restore_best_weights=True.
+
+Results:
+- Best validation model: epoch 12.
+- Best validation accuracy: 38.133%.
+- Training stopped at epoch 17 because validation accuracy did not improve.
+- Mean Accuracy: 38.133%.
+- Mean Recall: 19.467%.
+- Mean Precision: 21.999%.
+
+Class-level observations:
+- Building remained the dominant predicted class, with 82.920% recall and
+    37.625% precision.
+- Small car was also recognized relatively well, with 80.547% recall.
+- Fishing vessel, Dump truck, Excavator, Helipad and Pylon had zero recall.
+- The model therefore improved substantially over experiment_02, which had
+    collapsed to the majority class, but it still performs unevenly across
+    categories.
+
+Conclusions:
+- Normalizing the input values and reducing the learning rate made the
+    training stable and allowed the model to learn several classes.
+- The result is slightly below experiment_01 in Mean Accuracy, Mean Recall
+    and Mean Precision, so this configuration is not yet the best model.
+- The remaining problem is class imbalance and not simply a lack of dense
+    layers. Increasing the network size alone would not directly address the
+    zero-recall classes.
+
+Next step:
+- Experiment_04 tested the original baseline architecture with normalized
+    inputs instead of adding another dense layer or using class weights.
+- Its results are documented in the experiment_04 description and in the
+    project progress summary.
