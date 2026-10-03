@@ -9,7 +9,10 @@ from typing import Iterable, Iterator, Sequence
 
 import numpy as np
 import rasterio
-from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, PrecisionRecallDisplay
+
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import label_binarize
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]
@@ -292,3 +295,52 @@ def save_prediction_json(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as output_file:
         json.dump(predictions_data, output_file, indent=2)
+
+
+
+
+
+
+
+def plot_training_history(history_dict: dict) -> None:
+    """Genera gráficas de evolución de accuracy y loss."""
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+
+    # Gráfica de Accuracy
+    ax1.plot(history_dict['accuracy'], label='Train Accuracy')
+    ax1.plot(history_dict['val_accuracy'], label='Validation Accuracy')
+    ax1.set_title('Model Accuracy')
+    ax1.set_ylabel('Accuracy')
+    ax1.set_xlabel('Epoch')
+    ax1.legend(loc='lower right')
+
+    # Gráfica de Loss
+    ax2.plot(history_dict['loss'], label='Train Loss')
+    ax2.plot(history_dict['val_loss'], label='Validation Loss')
+    ax2.set_title('Model Loss')
+    ax2.set_ylabel('Loss')
+    ax2.set_xlabel('Epoch')
+    ax2.legend(loc='upper right')
+
+    plt.tight_layout()
+    plt.show()
+
+def plot_precision_recall_curves(y_true: list[str], y_prob: np.ndarray, categories: dict[int, str]) -> None:
+    """Genera curvas Precision-Recall para cada categoría."""
+    classes = list(categories.values())
+    y_true_bin = label_binarize(y_true, classes=classes)
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    for i, class_name in enumerate(classes):
+        PrecisionRecallDisplay.from_predictions(
+            y_true_bin[:, i],
+            y_prob[:, i],
+            name=class_name,
+            ax=ax,
+            plot_chance_level=(i == 0)
+        )
+
+    ax.set_title("Precision-Recall Curves per Class")
+    ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.tight_layout()
+    plt.show()
