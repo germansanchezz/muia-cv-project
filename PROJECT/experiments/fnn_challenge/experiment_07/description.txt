@@ -1,0 +1,47 @@
+Experiment 07: optimizer comparison using the experiment_05 ffNN
+
+Hypothesis:
+- Compare SGD with momentum against the Adam optimizer used in experiment_05.
+
+Kept equal to experiment_05:
+- Architecture: Flatten -> Dense(512) -> Dense(256) -> Dense(128) -> Dense(13).
+- Original, unnormalized image inputs.
+- Learning rate: 1e-4.
+- Batch size: 32.
+- Maximum epochs: 100.
+- Same train/validation split.
+- Same ReduceLROnPlateau and EarlyStopping callbacks.
+
+Changed:
+- Optimizer changed from Adam to SGD with momentum=0.9 and nesterov=True.
+- Checkpoint and prediction paths point to experiment_07.
+
+Challenge compliance:
+- Feedforward neural network using dense layers only.
+- No CNN, transfer learning, data augmentation, dropout, batch normalization,
+  class weights or norm penalties.
+
+Results:
+- Best validation model: epoch 91.
+- Training completed all 100 epochs.
+- Mean Accuracy: 49.920%.
+- Mean Recall: 44.838%.
+- Mean Precision: 49.124%.
+
+Conclusions:
+- SGD with momentum improved the main Mean Accuracy over experiment_05 with
+    Adam, increasing it from 47.573% to 49.920%.
+- Mean Recall and Mean Precision also improved compared with experiment_05.
+- The validation accuracy continued to improve at late epochs, so the larger
+    training budget was useful for SGD.
+- A substantial train/validation gap remained: training accuracy reached about
+    78%, while the best validation accuracy was 49.920%.
+- The model did not reach the 55% target, but the optimizer change was
+    promising enough to justify a focused learning-rate experiment.
+
+Proposal for experiment_08:
+- Keep the experiment_07 architecture, unnormalized inputs, batch size,
+    callbacks and SGD momentum configuration.
+- Change only the SGD learning rate from 1e-4 to 3e-4.
+- The goal is to test whether the slow late improvement in experiment_07 is
+    caused by a conservative learning rate.

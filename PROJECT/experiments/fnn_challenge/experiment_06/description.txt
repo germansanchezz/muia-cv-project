@@ -1,0 +1,54 @@
+Experiment 06: experiment_05 with normalized inputs
+
+Hypothesis:
+- Test whether normalizing the input values improves the best configuration
+  obtained in experiment_05.
+
+Architecture:
+- Flatten(input_shape=(224, 224, 3)).
+- Dense(512, activation="relu").
+- Dense(256, activation="relu").
+- Dense(128, activation="relu").
+- Dense(13, activation="softmax").
+
+Kept equal to experiment_05:
+- Adam optimizer with learning rate 1e-4.
+- beta_1=0.9, beta_2=0.999, amsgrad=True, clipnorm=1.0.
+- Batch size: 32.
+- Maximum epochs: 100.
+- Original ReduceLROnPlateau and EarlyStopping callbacks.
+
+Changed:
+- Training, validation and test images are normalized to [0, 1].
+- The checkpoint and prediction paths point to the experiment_06 directory.
+
+Challenge compliance:
+- Feedforward neural network using dense layers only.
+- No CNN, transfer learning, data augmentation, dropout, batch normalization,
+  class weights or norm penalties.
+
+Results:
+- Best validation model: epoch 51.
+- Training stopped at epoch 91 due to the early-stopping criterion.
+- Mean Accuracy: 57.760%.
+- Mean Recall: 53.603%.
+- Mean Precision: 56.909%.
+
+Conclusions:
+- Normalization produced a substantial improvement over experiment_05 in all
+  three validation metrics.
+- This result is useful as an exploratory comparison, but normalization is
+  treated as outside the main experiment line for this assignment because the
+  requested study focuses on architecture, optimization algorithm, training
+  parameters and stopping point.
+- The model shows a large train/validation gap: training accuracy reached about
+  85%, while validation accuracy was 57.760%, indicating overfitting.
+- Experiment_06 will not be used as the main reference when selecting the next
+  challenge experiment.
+
+Main experiment line:
+- Experiments 03, 04 and 06 use input normalization and should be considered
+  exploratory preprocessing experiments rather than the main comparison.
+- Experiments 01, 02 and 05 use the original unnormalized input protocol.
+- Experiment_07 will return to the original input protocol and test a different
+  optimization algorithm on the experiment_05 architecture.

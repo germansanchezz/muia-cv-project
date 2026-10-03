@@ -6,6 +6,8 @@
 
 **/model.keras
 
-# NO subir carpetas de datos
+# NO subir carpetas de datos ni enlaces simbólicos a carpetas de datos
 xview_recognition/
 xview_detection/
+**/xview_recognition
+**/xview_detection

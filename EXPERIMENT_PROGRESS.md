@@ -106,6 +106,56 @@ The best validation model was obtained at epoch 20. All 13 classes obtained
 non-zero recall, and the bias towards `Building` was reduced. This is currently
 the best model and the reference point for future experiments.
 
+### Experiment 05: larger ffNN and longer training
+
+This experiment tested a deeper feedforward architecture with three hidden
+layers:
+
+```text
+Flatten -> Dense(512) -> Dense(256) -> Dense(128) -> Dense(13) -> Softmax
+```
+
+It used Adam with learning rate `1e-4`, batch size `32`, and a maximum of 100
+epochs. The original callback strategy was retained. Inputs were not
+normalized, so this experiment remains comparable as an architecture and
+training-parameter experiment within the ffNN challenge.
+
+The best validation model was obtained at epoch 46 and training stopped at
+epoch 86.
+
+| Metric | Result |
+|---|---:|
+| Mean Accuracy | **47.573%** |
+| Mean Recall | **40.211%** |
+| Mean Precision | **42.761%** |
+
+This is the best configuration tested so far. It improves on experiment 04,
+although the gap between training and validation accuracy indicates some
+overfitting. `Helipad` remains the weakest class, with zero recall.
+
+### Experiment 06: experiment 05 with normalized inputs
+
+Experiment 06 kept the experiment 05 architecture, optimizer, batch size, epoch
+limit and callbacks, and changed only the input preprocessing by normalizing
+training, validation and test images to `[0, 1]`.
+
+Results:
+
+| Metric | Result |
+|---|---:|
+| Mean Accuracy | **57.760%** |
+| Mean Recall | **53.603%** |
+| Mean Precision | **56.909%** |
+
+The best validation model was obtained at epoch 51 and training stopped at
+epoch 91. This is a strong exploratory result, but it is excluded from the
+main challenge comparison because the current study is being kept focused on
+architecture, optimizer, training parameters and stopping point. The
+normalization option has consequently been removed from the common utilities.
+
+Experiments 03, 04 and 06 used normalization and should be treated as
+exploratory preprocessing experiments rather than the main comparison line.
+
 ## Current comparison
 
 | Experiment | Main change | Mean Accuracy | Mean Recall | Mean Precision |
@@ -114,20 +164,27 @@ the best model and the reference point for future experiments.
 | 02 | Added `Dense(64)` | 19.360% | 7.692% | 1.489% |
 | 03 | `Dense(64)` + normalization + lower LR | 38.133% | 19.467% | 21.999% |
 | 04 | Baseline + normalization | **41.280%** | **34.049%** | **36.760%** |
+| 05 | Deeper ffNN, batch 32, longer training | **47.573%** | **40.211%** | **42.761%** |
+| 06 | Experiment 05 + normalized inputs | **57.760%** | **53.603%** | **56.909%** |
+| 07 | Experiment 05 + SGD with momentum | **49.920%** | **44.838%** | **49.124%** |
+| 08 | SGD with momentum, learning rate 3e-4 | **52.480%** | **45.877%** | **46.808%** |
+| 09 | Experiment 08 with batch size 16 | **55.733%** | **50.048%** | **53.474%** |
 
 ## Where to continue tomorrow
 
-Use experiment 04 as the reference configuration. Do not add more dense layers
-automatically: the results show that input scaling had a larger positive effect
-than increasing network capacity.
+Use experiment 05 as the reference configuration for the main challenge line.
+Experiment 06 is kept as an exploratory result, while experiment 07 tests the
+optimization algorithm without normalization.
 
 Possible next experiments, changing one factor at a time:
 
-1. Keep experiment 04 fixed and test Adam with learning rate `3e-4`.
-2. Keep experiment 04 fixed and use a more gradual learning-rate reduction,
+1. Treat experiment 09 as the current best non-normalized reference model.
+2. Keep the best valid configuration fixed and test Adam with learning rate `3e-4`.
+3. Keep the best valid configuration fixed and use a more gradual learning-rate reduction,
    such as `factor=0.5` and a longer patience.
-3. Keep experiment 04 fixed and compare Adam with SGD plus momentum.
-4. Test a different batch size, such as `32`.
+4. Compare Adam with SGD plus momentum while changing no other factor.
+5. Test a different batch size only after selecting the best optimizer and
+    learning rate.
 
 For every new experiment, keep the same validation split and compare Mean
 Accuracy first, with Mean Recall and Mean Precision as secondary diagnostics.

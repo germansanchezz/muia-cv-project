@@ -1,0 +1,46 @@
+Experiment 08: SGD learning-rate comparison
+
+Hypothesis:
+- Test whether the promising SGD configuration from experiment_07 benefits
+  from a larger learning rate.
+
+Kept equal to experiment_07:
+- Architecture: Flatten -> Dense(512) -> Dense(256) -> Dense(128) -> Dense(13).
+- Original, unnormalized image inputs.
+- SGD with momentum=0.9 and nesterov=True.
+- Batch size: 32.
+- Maximum epochs: 100.
+- Same train/validation split and callbacks.
+
+Changed:
+- Learning rate increased from 1e-4 to 3e-4.
+- Checkpoint and prediction paths point to experiment_08.
+
+Challenge compliance:
+- Feedforward neural network using dense layers only.
+- No CNN, transfer learning, data augmentation, dropout, batch normalization,
+  class weights or norm penalties.
+
+Results:
+- Best validation model: epoch 41.
+- Training stopped at epoch 81 due to the early-stopping criterion.
+- Mean Accuracy: 52.480%.
+- Mean Recall: 45.877%.
+- Mean Precision: 46.808%.
+
+Conclusions:
+- Increasing the SGD learning rate from 1e-4 to 3e-4 improved the main
+  accuracy from 49.920% in experiment_07 to 52.480%.
+- The learning-rate reduction at epoch 28 was useful: validation accuracy
+  continued improving after the reduction and reached its best value at epoch
+  41.
+- The training accuracy reached approximately 75.8%, while the best validation
+  accuracy was 52.480%, indicating a considerable generalization gap.
+- The experiment is close to the 55% target, so changing the batch size is a
+  reasonable next hyperparameter to test.
+
+Proposal for experiment_09:
+- Keep the architecture, SGD configuration, learning rate, callbacks and
+  unnormalized inputs unchanged.
+- Change only the batch size from 32 to 16 to test whether noisier gradient
+  updates improve validation generalization.

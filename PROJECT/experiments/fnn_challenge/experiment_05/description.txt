@@ -1,0 +1,57 @@
+Experiment 05: deeper ffNN with larger batch and longer training
+
+Architecture:
+- Flatten(input_shape=(224, 224, 3)).
+- Dense(512, activation="relu").
+- Dense(256, activation="relu").
+- Dense(128, activation="relu").
+- Dense(13, activation="softmax").
+
+Training configuration:
+- Adam optimizer.
+- Learning rate: 1e-4.
+- beta_1=0.9, beta_2=0.999.
+- amsgrad=True.
+- clipnorm=1.0.
+- Batch size: 32.
+- Maximum epochs: 100.
+- ReduceLROnPlateau on val_accuracy, factor=0.1, patience=10.
+- EarlyStopping on val_accuracy, patience=40.
+- ModelCheckpoint saving the best val_accuracy model.
+- Images were not normalized in this experiment.
+
+Challenge compliance:
+- This experiment uses only a feedforward neural network made of dense layers.
+- No CNN, transfer learning, data augmentation, dropout, batch normalization or
+  norm penalties were used.
+- The changes are limited to architecture and training parameters allowed in
+  this challenge phase.
+
+Results:
+- Best validation model: epoch 46.
+- Training stopped at epoch 86 due to the early-stopping criterion.
+- Mean Accuracy: 47.573%.
+- Mean Recall: 40.211%.
+- Mean Precision: 42.761%.
+
+Class-level observations:
+- Building recall was 63.361%, lower than in experiment_04, while precision
+  increased to 56.098%.
+- Small car remained strong with 79.027% recall.
+- Cargo plane, Fishing vessel, Excavator, Shipping container and Pylon showed
+  meaningful recall improvements compared with earlier experiments.
+- Helipad remained the weakest class, with 0.000% recall.
+
+Conclusions:
+- This is the best configuration tested so far for the main Mean Accuracy
+  metric, improving substantially over experiment_04.
+- Increasing the ffNN capacity together with a larger batch size, a lower
+  learning rate and a longer training budget was more effective than simply
+  adding a small hidden layer.
+- The model still overfits to some extent: training accuracy reached about 56%,
+  while the best validation accuracy was 47.573%.
+
+Next experiment:
+- Experiment_06 will keep this architecture and training configuration, and
+  will add input normalization to test whether scaling the inputs can improve
+  the current best result.

@@ -61,7 +61,6 @@ class GenericImage:
 def load_geoimage(
     filename: str | Path,
     dataset_dir: Path = DATASET_DIR,
-    normalize: bool = False,
 ) -> np.ndarray:
     image_path = Path(filename)
     if not image_path.is_absolute():
@@ -73,8 +72,6 @@ def load_geoimage(
             image = np.moveaxis(src_raster.read(), 0, -1)
 
     image = image.astype(np.float32)
-    if normalize:
-        image /= 255.0
     return image
 
 
@@ -153,11 +150,7 @@ def image_generator(
     categories: dict[int, str] = CATEGORIES,
     dataset_dir: Path = DATASET_DIR,
     do_shuffle: bool = False,
-    shuffle: bool | None = None,
-    normalize: bool = False,
 ) -> Iterator[tuple[np.ndarray, np.ndarray]]:
-    if shuffle is not None:
-        do_shuffle = shuffle
     category_to_index = {name: index for index, name in categories.items()}
     while True:
         current_records = list(records)
@@ -166,7 +159,7 @@ def image_generator(
         for start in range(0, len(current_records), batch_size):
             group = current_records[start:start + batch_size]
             images = np.asarray([
-                load_geoimage(filename, dataset_dir=dataset_dir, normalize=normalize)
+                load_geoimage(filename, dataset_dir=dataset_dir)
                 for filename, _ in group
             ], dtype=np.float32)
             labels = np.zeros((len(group), len(categories)), dtype=np.float32)

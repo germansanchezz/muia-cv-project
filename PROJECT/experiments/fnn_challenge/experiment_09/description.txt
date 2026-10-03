@@ -1,0 +1,40 @@
+Experiment 09: smaller batch size
+
+Hypothesis:
+- Test whether a smaller batch produces noisier gradient updates that improve
+  validation generalization and accuracy.
+
+Kept equal to experiment_08:
+- Architecture: Flatten -> Dense(512) -> Dense(256) -> Dense(128) -> Dense(13).
+- Original, unnormalized image inputs.
+- SGD with learning rate 3e-4, momentum=0.9 and nesterov=True.
+- Maximum epochs: 100.
+- Same train/validation split and callbacks.
+
+Changed:
+- Batch size reduced from 32 to 16.
+- Checkpoint and prediction paths point to experiment_09.
+
+Challenge compliance:
+- Feedforward neural network using dense layers only.
+- No CNN, transfer learning, data augmentation, dropout, batch normalization,
+  class weights or norm penalties.
+
+Results:
+- Best validation model: epoch 80.
+- Training completed all 100 epochs.
+- Mean Accuracy: 55.733%.
+- Mean Recall: 50.048%.
+- Mean Precision: 53.474%.
+
+Conclusions:
+- Reducing the batch size from 32 to 16 improved all three validation metrics
+  compared with experiment_08: accuracy increased from 52.480% to 55.733%.
+- The smaller batch size appears to have improved generalization enough to
+  exceed the 55% accuracy target.
+- The training accuracy reached approximately 86.5%, while validation accuracy
+  was 55.733%, so a substantial generalization gap remains.
+- Helipad remains the weakest class, with 11.111% recall, while Cargo plane,
+  Small car and Building continue to be among the strongest classes.
+- This is currently the best result in the main, non-normalized experiment
+  line and should be treated as the reference model for the report.
