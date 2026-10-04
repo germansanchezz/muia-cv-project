@@ -3,14 +3,18 @@
 \usetheme{Madrid}
 \usecolortheme{whale}
 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{booktabs}
+\usepackage{tabularx}
+
 \title{The ffNN Challenge}
 \subtitle{Image Recognition Challenge}
 
 \author{
     Gómez Hernández, Marco \\
-    \and
     Miralles Retuerto, Pablo \\
-    \and
     Sánchez Carmona, Germán
 }
 
@@ -24,19 +28,103 @@
 
 \begin{document}
 
+% PORTADA
 \begin{frame}
     \titlepage
 \end{frame}
 
-\begin{frame}{Primera diapositiva}
-    \begin{block}{Importante}
-        Este es un bloque de texto destacado en azul.
+
+% TABLA DE EXPERIMENTOS
+\begin{frame}{Experimentos sin normalización}
+    \scriptsize
+    \setlength{\tabcolsep}{3pt}
+    \renewcommand{\arraystretch}{1.4}
+
+    \begin{tabularx}{\textwidth}{@{}c l l X c@{}}
+        \toprule
+        \textbf{Exp.} &
+        \textbf{Arquitectura} &
+        \textbf{Optimizador} &
+        \textbf{Hiperparámetros} &
+        \textbf{Callbacks} \\
+        \midrule
+
+        01 & Base & Adam
+        & LR: $10^{-3}$; batch: 16; épocas: 20
+        & Comunes \\
+
+        02 & MLP-64 & Adam
+        & LR: $10^{-3}$; batch: 16; épocas: 20
+        & Comunes \\
+
+        05 & MLP-512-256-128 & Adam
+        & LR: $10^{-4}$; batch: 32*; épocas: 100
+        & Comunes \\
+
+        07 & MLP-512-256-128 & SGD + Nesterov
+        & LR: $10^{-4}$; batch: 32; épocas: 100
+        & Comunes \\
+
+        08 & MLP-512-256-128 & SGD + Nesterov
+        & LR: $3\cdot10^{-4}$; batch: 32; épocas: 100
+        & Comunes \\
+
+        09 & MLP-512-256-128 & SGD + Nesterov
+        & LR: $3\cdot10^{-4}$; batch: 16; épocas: 100
+        & Comunes \\
+
+        \bottomrule
+    \end{tabularx}
+
+    \medskip
+    \textbf{Base:}
+    Flatten $\rightarrow$ ReLU $\rightarrow$ Dense(13)
+    $\rightarrow$ Softmax.
+
+    \medskip
+    \textbf{MLP:}
+    Flatten, capas ocultas indicadas con ReLU
+    y salida Dense(13, Softmax).
+
+    \medskip
+    \tiny
+    Se indica el learning rate inicial y el máximo de épocas.\\
+    *Experimento 05: batch 32 según la descripción;
+    el notebook actual indica 128. Pendiente de confirmar.
+\end{frame}
+
+% CONFIGURACIÓN COMPARTIDA
+\begin{frame}{Configuración de entrenamiento y callbacks}
+    \small
+
+    \begin{block}{Configuración compartida}
+        \begin{itemize}
+            \item Entrada: imágenes de $224 \times 224 \times 3$,
+                  sin normalización.
+            \item División: 90\,\% entrenamiento y 10\,\% validación,
+                  con \texttt{random\_state=1}.
+            \item Pérdida: entropía cruzada categórica.
+            \item Recorte de gradientes: \texttt{clipnorm=1.0}.
+        \end{itemize}
     \end{block}
 
+    \textbf{Optimizadores}
     \begin{itemize}
-        \item Primer punto de la lista.
-        \item Segundo punto de la lista.
+        \item Adam: $\beta_1=0.9$, $\beta_2=0.999$,
+              $\epsilon=10^{-8}$ y AMSGrad activado.
+        \item SGD: momentum $=0.9$ y Nesterov activado.
     \end{itemize}
+
+    \textbf{Callbacks comunes}
+    \begin{itemize}
+        \item \textbf{ModelCheckpoint}: guarda el mejor modelo.
+        \item \textbf{ReduceLROnPlateau}: factor 0.1, paciencia 10.
+        \item \textbf{EarlyStopping}: paciencia 40.
+        \item \textbf{TerminateOnNaN}: detiene ante pérdida NaN.
+    \end{itemize}
+
+    \footnotesize
+    Los tres primeros monitorizan \texttt{val\_accuracy}.
 \end{frame}
 
 \end{document}
