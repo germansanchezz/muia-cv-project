@@ -35,7 +35,7 @@
 
 
 % TABLA DE EXPERIMENTOS
-\begin{frame}{Experimentos sin normalización}
+\begin{frame}{Experimentos}
     \scriptsize
     \setlength{\tabcolsep}{3pt}
     \renewcommand{\arraystretch}{1.4}
@@ -58,7 +58,7 @@
         & Comunes \\
 
         05 & MLP-512-256-128 & Adam
-        & LR: $10^{-4}$; batch: 32*; épocas: 100
+        & LR: $10^{-4}$; batch: 32; épocas: 100
         & Comunes \\
 
         07 & MLP-512-256-128 & SGD + Nesterov
@@ -86,11 +86,6 @@
     Flatten, capas ocultas indicadas con ReLU
     y salida Dense(13, Softmax).
 
-    \medskip
-    \tiny
-    Se indica el learning rate inicial y el máximo de épocas.\\
-    *Experimento 05: batch 32 según la descripción;
-    el notebook actual indica 128. Pendiente de confirmar.
 \end{frame}
 
 % CONFIGURACIÓN COMPARTIDA
@@ -144,6 +139,58 @@
     \begin{block}{Métrica monitorizada}
         Los tres primeros utilizan \texttt{val\_accuracy}.
     \end{block}
+\end{frame}
+
+\begin{frame}{Evolución de los experimentos}
+    \scriptsize
+    \setlength{\tabcolsep}{4pt}
+    \renewcommand{\arraystretch}{1.35}
+
+    \begin{tabularx}{\textwidth}{@{}c X c@{}}
+        \toprule
+        \textbf{Comparación} &
+        \textbf{Cambios realizados} &
+        \textbf{Accuracy validación} \\
+        \midrule
+
+        Inicio $\to$ 01
+        & Modelo base sin capas ocultas.
+          Adam, LR $10^{-3}$, batch 16 y 20 épocas.
+        & \textbf{38,56\,\%} \\
+
+        01 $\to$ 02
+        & Se añade una capa oculta de 64 neuronas con ReLU.
+          Se mantiene la configuración de entrenamiento.
+        & \textbf{19,36\,\%} \\
+
+        02 $\to$ 05
+        & Se pasa a tres capas ocultas: 512, 256 y 128.
+          LR: $10^{-4}$; batch: 32;
+          máximo de épocas: 100.
+        & \textbf{47,57\,\%} \\
+
+        05 $\to$ 07
+        & Se sustituye Adam por SGD con momentum 0.9
+          y Nesterov. Se mantienen LR y batch.
+        & \textbf{49,92\,\%} \\
+
+        07 $\to$ 08
+        & Se aumenta el LR inicial de SGD:
+          $10^{-4} \to 3\cdot10^{-4}$.
+        & \textbf{52,48\,\%} \\
+
+        08 $\to$ 09
+        & Se reduce el batch de 32 a 16.
+          Se mantiene el resto de la configuración.
+        & \textbf{55,73\,\%} \\
+
+        \bottomrule
+    \end{tabularx}
+
+    \medskip
+    \footnotesize
+    Todos estos experimentos utilizan entradas sin normalizar
+    y el mismo reparto de entrenamiento y validación.
 \end{frame}
 
 \end{document}
