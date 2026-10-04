@@ -24,4 +24,19 @@ Challenge compliance:
   class weights or norm penalties.
 
 Results:
-- To be completed after running ffnn_experiment_10.ipynb.
+- Best validation model: epoch 54.
+- Training stopped at epoch 94 due to the early-stopping criterion.
+- Mean Accuracy: 55.947%.
+- Mean Recall: 49.268%.
+- Mean Precision: 60.728%.
+
+Conclusions:
+- Adding a Dense(64) layer produced a small accuracy improvement over experiment_09, from 55.733% to 55.947%, equivalent to approximately 0.21 
+  percentage points.
+- Mean Precision increased from 53.474% to 60.728%, while Mean Recall decreased from 50.048% to 49.268%. The additional layer therefore did not 
+  improve all metrics.
+- At the best validation epoch, training accuracy was approximately 82.05%, compared with 55.947% validation accuracy, indicating substantial 
+  overfitting.
+- This experiment achieved the highest recorded validation accuracy in the non-normalized experiment line. However, the improvement over
+  experiment_09 amounts to only four additional correct predictions among 1,875 validation images and should be checked across repeated runs 
+  before concluding that the deeper architecture is consistently better.
