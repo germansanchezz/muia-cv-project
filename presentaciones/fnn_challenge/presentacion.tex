@@ -94,37 +94,56 @@
 \end{frame}
 
 % CONFIGURACIÓN COMPARTIDA
-\begin{frame}{Configuración de entrenamiento y callbacks}
+\begin{frame}{Configuración de entrenamiento}
     \small
 
     \begin{block}{Configuración compartida}
         \begin{itemize}
             \item Entrada: imágenes de $224 \times 224 \times 3$,
                   sin normalización.
-            \item División: 90\,\% entrenamiento y 10\,\% validación,
-                  con \texttt{random\_state=1}.
+            \item División: 90\,\% entrenamiento y 10\,\% validación.
+            \item Semilla del reparto: \texttt{random\_state=1}.
             \item Pérdida: entropía cruzada categórica.
             \item Recorte de gradientes: \texttt{clipnorm=1.0}.
         \end{itemize}
     \end{block}
 
-    \textbf{Optimizadores}
+    \begin{block}{Optimizadores}
+        \begin{itemize}
+            \item \textbf{Adam:}
+                  $\beta_1=0.9$, $\beta_2=0.999$,
+                  $\epsilon=10^{-8}$ y AMSGrad activado.
+            \item \textbf{SGD:}
+                  momentum $=0.9$ y Nesterov activado.
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Callbacks comunes}
+    \small
+
     \begin{itemize}
-        \item Adam: $\beta_1=0.9$, $\beta_2=0.999$,
-              $\epsilon=10^{-8}$ y AMSGrad activado.
-        \item SGD: momentum $=0.9$ y Nesterov activado.
+        \item \textbf{ModelCheckpoint}\\
+              Guarda el modelo con mayor accuracy de validación.
+
+        \medskip
+        \item \textbf{ReduceLROnPlateau}\\
+              Reduce el learning rate por un factor de 0.1
+              tras 10 épocas sin mejora.
+
+        \medskip
+        \item \textbf{EarlyStopping}\\
+              Detiene el entrenamiento tras 40 épocas sin mejora.
+
+        \medskip
+        \item \textbf{TerminateOnNaN}\\
+              Detiene el entrenamiento si la pérdida es NaN.
     \end{itemize}
 
-    \textbf{Callbacks comunes}
-    \begin{itemize}
-        \item \textbf{ModelCheckpoint}: guarda el mejor modelo.
-        \item \textbf{ReduceLROnPlateau}: factor 0.1, paciencia 10.
-        \item \textbf{EarlyStopping}: paciencia 40.
-        \item \textbf{TerminateOnNaN}: detiene ante pérdida NaN.
-    \end{itemize}
-
-    \footnotesize
-    Los tres primeros monitorizan \texttt{val\_accuracy}.
+    \medskip
+    \begin{block}{Métrica monitorizada}
+        Los tres primeros utilizan \texttt{val\_accuracy}.
+    \end{block}
 \end{frame}
 
 \end{document}
