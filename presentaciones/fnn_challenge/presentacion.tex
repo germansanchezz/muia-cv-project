@@ -5,20 +5,23 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage[spanish]{babel}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{graphicx}
+\graphicspath{{images/}}
 
 \title{The ffNN Challenge}
 \subtitle{Image Recognition Challenge}
 
-\author{
+\author[Gómez, Miralles y Sánchez]{
     Gómez Hernández, Marco \\
     Miralles Retuerto, Pablo \\
     Sánchez Carmona, Germán
 }
 
-\institute{
+\institute[UPM]{
     Universidad Politécnica de Madrid\\
     Máster Universitario en Inteligencia Artificial\\
     Visión por Computador
@@ -70,6 +73,10 @@
         & Comunes \\
 
         09 & MLP-512-256-128 & SGD + Nesterov
+        & LR: $3\cdot10^{-4}$; batch: 16; épocas: 100
+        & Comunes \\
+
+        10 & MLP-512-256-128-64 & SGD + Nesterov
         & LR: $3\cdot10^{-4}$; batch: 16; épocas: 100
         & Comunes \\
 
@@ -184,6 +191,11 @@
           Se mantiene el resto de la configuración.
         & \textbf{55,73\,\%} \\
 
+        09 $\to$ 10
+        & Se añade Dense(64, ReLU) antes de la salida.
+          Se mantiene el resto de la configuración.
+        & \textbf{55,95\,\%} \\
+
         \bottomrule
     \end{tabularx}
 
@@ -191,6 +203,56 @@
     \footnotesize
     Todos estos experimentos utilizan entradas sin normalizar
     y el mismo reparto de entrenamiento y validación.
+\end{frame}
+
+\begin{frame}{Experimento 10: entrenamiento y resultados}
+\centering
+\includegraphics[width=\textwidth]{training.png}
+\par\medskip
+\small
+\begin{tabular}{ccc}
+\toprule
+\textbf{Accuracy} & \textbf{Recall macro} & \textbf{Precision macro} \\
+55,947\,\% & 49,268\,\% & 60,728\,\% \\
+\bottomrule
+\end{tabular}
+\par\medskip
+\footnotesize
+\begin{itemize}
+\item Mejor modelo en la \textbf{época 54}. Parada en la 94. Mejora de \textbf{0,21 puntos} frente al 09: cuatro aciertos más en validación.
+\item Indicios de \textbf{sobreajuste}: en la época 54, accuracy de entrenamiento del 82,05\,\% frente al 55,95\,\% de validación.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Experimento 10: matriz de confusión}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.70\textwidth}
+\includegraphics[width=\linewidth,height=6.25cm,keepaspectratio]{cm.png}
+\end{column}
+\begin{column}{0.28\textwidth}
+\footnotesize
+\begin{itemize}
+\setlength{\itemsep}{12pt}
+\item \textbf{Small car} alcanza el mayor recall: 82,68\,\%. Le sigue \textbf{Building}: 74,38\,\%.
+\item \textbf{Helipad}: solo 1 de 9 aciertos. El 55,56\,\% de sus ejemplos se confunde con Building.
+\end{itemize}
+\medskip
+\scriptsize Filas: clase real.\\Columnas: predicción.\\Normalizada por fila.
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Experimento 10: curvas precision--recall}
+\centering
+\includegraphics[width=\textwidth,height=5.3cm,keepaspectratio]{curves.png}
+\par\smallskip
+\footnotesize
+\begin{itemize}
+\item \textbf{Small car} obtiene la mayor precisión media (AP): 0,80. Le sigue \textbf{Cargo plane}: 0,70.
+\item \textbf{Helipad} (AP 0,11) y \textbf{Truck} (AP 0,24) son las clases con menor AP.
+\end{itemize}
+\par\smallskip
+\tiny La referencia discontinua de 0,03 corresponde a Cargo plane; no es común a todas las clases. AP resume la curva y no equivale a la precision del argmax.
 \end{frame}
 
 \end{document}
