@@ -169,6 +169,7 @@ exploratory preprocessing experiments rather than the main comparison line.
 | 07 | Experiment 05 + SGD with momentum | **49.920%** | **44.838%** | **49.124%** |
 | 08 | SGD with momentum, learning rate 3e-4 | **52.480%** | **45.877%** | **46.808%** |
 | 09 | Experiment 08 with batch size 16 | **55.733%** | **50.048%** | **53.474%** |
+| 10 | Experiment 09 + Dense(64) | Pending | Pending | Pending |
 
 ## Where to continue tomorrow
 
@@ -179,11 +180,12 @@ optimization algorithm without normalization.
 Possible next experiments, changing one factor at a time:
 
 1. Treat experiment 09 as the current best non-normalized reference model.
-2. Keep the best valid configuration fixed and test Adam with learning rate `3e-4`.
-3. Keep the best valid configuration fixed and use a more gradual learning-rate reduction,
+2. Execute experiment 10 and compare the additional dense layer with experiment 09.
+3. Keep the best valid configuration fixed and test Adam with learning rate `3e-4`.
+4. Keep the best valid configuration fixed and use a more gradual learning-rate reduction,
    such as `factor=0.5` and a longer patience.
-4. Compare Adam with SGD plus momentum while changing no other factor.
-5. Test a different batch size only after selecting the best optimizer and
+5. Compare Adam with SGD plus momentum while changing no other factor.
+6. Test a different batch size only after selecting the best optimizer and
     learning rate.
 
 For every new experiment, keep the same validation split and compare Mean

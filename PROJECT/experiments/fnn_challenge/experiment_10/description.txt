@@ -1,0 +1,27 @@
+Experiment 10: one additional dense layer
+
+Hypothesis:
+- Test whether adding a Dense(64) layer before the output improves the
+  experiment_09 ffNN while preserving its successful optimization settings.
+
+Kept equal to experiment_09:
+- Original, unnormalized image inputs.
+- SGD with learning rate 3e-4, momentum=0.9 and nesterov=True.
+- Batch size: 16.
+- Maximum epochs: 100.
+- Same train/validation split and callbacks.
+
+Changed:
+- Architecture changed from
+  Flatten -> Dense(512) -> Dense(256) -> Dense(128) -> Dense(13)
+  to
+  Flatten -> Dense(512) -> Dense(256) -> Dense(128) -> Dense(64) -> Dense(13).
+- Checkpoint and prediction paths point to experiment_10.
+
+Challenge compliance:
+- Feedforward neural network using dense layers only.
+- No CNN, transfer learning, data augmentation, dropout, batch normalization,
+  class weights or norm penalties.
+
+Results:
+- To be completed after running ffnn_experiment_10.ipynb.
