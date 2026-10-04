@@ -11,3 +11,14 @@ xview_recognition/
 xview_detection/
 **/xview_recognition
 **/xview_detection
+
+# LaTeX auxiliary files
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
