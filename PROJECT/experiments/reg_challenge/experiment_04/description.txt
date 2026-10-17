@@ -1,0 +1,159 @@
+Experimento 04 — Batch Normalization con batch size 8
+====================================================
+
+Objetivo e hipótesis
+-------------------
+Estudiar Batch Normalization como técnica independiente sobre el baseline.
+Se mantiene batch size 8 para que no cambien simultáneamente la técnica y el
+tamaño de lote. La hipótesis es que normalizar las activaciones internas puede
+mejorar la evolución del entrenamiento y la validación. No se presupone una
+mejora: con ocho imágenes, las estadísticas por lote pueden ser variables.
+Una prueba posterior podría comparar esta misma red con batch 32.
+
+Cambios respecto al baseline
+---------------------------
+En la celda del modelo se importa BatchNormalization y se sustituye cada
+Dense(units, activation='relu') por:
+Dense(units) → BatchNormalization() → Activation('relu').
+Se aplica a las tres capas ocultas: units=256, 128 y 64. Las líneas sustituidas
+se conservan comentadas y se anota el cambio. Se mantienen los sesgos de Dense
+por defecto para no introducir un cambio adicional; BN también aprende un
+ajuste de escala y desplazamiento.
+
+Arquitectura:
+Input(32, 32, 3) → Flatten →
+Dense(256) → BN → ReLU →
+Dense(128) → BN → ReLU →
+Dense(64) → BN → ReLU → Dense(13) → Softmax.
+
+BatchNormalization usa sus valores por defecto: axis=-1, momentum=0.99,
+epsilon=0.001, center=True y scale=True. Este momentum corresponde a las
+estadísticas móviles de BN y no al momentum=0.9 de SGD.
+Durante entrenamiento utiliza estadísticas del lote; durante validación y
+predicción utiliza las medias y varianzas móviles aprendidas. Las capas se
+mantienen entrenables. No se modifica la salida ni se normalizan sus logits.
+El modelo tiene 830.477 parámetros totales: 829.581 entrenables y 896 no
+entrenables (medias y varianzas móviles). El baseline tiene 828.685 parámetros.
+
+Configuración conservada
+-----------------------
+- Se parte del baseline y se entrena desde cero, sin cargar pesos previos.
+- Imágenes RGB de 32 × 32, float32, normalizadas a [0, 1] y precargadas.
+- Split: test_size=0.1, random_state=1, shuffle=True.
+- Batch size 8, máximo de 100 épocas y shuffle=True en fit.
+- SGD: learning_rate=1e-3, momentum=0.9, nesterov=True, clipnorm=1.0.
+- categorical_crossentropy y accuracy.
+- ModelCheckpoint: monitor val_accuracy, save_best_only=True.
+- ReduceLROnPlateau: monitor val_accuracy, factor=0.2, patience=5.
+- EarlyStopping: monitor val_accuracy, patience=10.
+- TerminateOnNaN y evaluación del mejor checkpoint, predicción por lotes.
+- Sin L2, Dropout, ruido ni aumentación para estudiar BN por separado.
+- Sin convoluciones ni transfer learning: cumple las restricciones citadas.
+
+Rutas y ejecución
+-----------------
+Fuera del modelo, solo cambia la configuración de rutas de resultados:
+PROJECT/experiments/reg_challenge/experiment_04/model.keras
+PROJECT/experiments/reg_challenge/experiment_04/prediction.json
+EXPERIMENT_DIR define esa carpeta y se reutilizan MODEL_PATH y PREDICTION_PATH
+para guardar y cargar, sin sobrescribir resultados de otras configuraciones.
+La detección de rutas del dataset se conserva.
+Las salidas heredadas se limpiaron al preparar el notebook. El usuario ya
+ha completado su ejecución. Los resultados siguientes proceden de sus salidas
+guardadas, sin reentrenar durante este análisis.
+
+Referencias guardadas
+---------------------
+Métrica               Baseline    Exp. 01 L2   Exp. 02 L2   Exp. 03 Dropout
+Accuracy validación   60,853 %    59,200 %     59,947 %     60,160 %
+Recall macro          53,368 %    52,135 %     52,368 %     53,134 %
+Precisión macro       55,068 %    53,786 %     55,729 %     56,264 %
+Mejor época           58          59           60           85
+
+Resultados de la ejecución
+--------------------------
+- Mejor época por val_accuracy: 45; val_accuracy=0.5568000078201294.
+- Épocas ejecutadas: 55, parada mediante EarlyStopping diez épocas después
+  del mejor resultado.
+- Accuracy de validación del mejor checkpoint: 55,680 % (1.044/1.875 aciertos).
+- Recall macro: 51,671 %; precisión macro: 50,081 %.
+- Mejor época: train accuracy=57,920 %, train loss=1,2552, val_loss=1,3457;
+  LR usado=8e-6. Brecha durante fit: 2,240 puntos porcentuales.
+- Última época: train accuracy=57,430 %, val_accuracy=54,99 % según log
+  redondeado, train loss=1,2586, val_loss=1,3520.
+- Mínima val_loss registrada: 1,3446, época 36; no es el checkpoint seleccionado
+  por val_accuracy.
+- ReduceLROnPlateau: épocas 22, 30, 36, 50 y 55; LR se reduce a 2e-4, 4e-5,
+  8e-6, 1,6e-6 y 3,2e-7. No hay una época posterior con el último valor.
+
+Comparación e interpretación
+---------------------------
+- Baseline: accuracy 60,853 %, recall macro 53,368 %, precisión macro 55,068 %.
+- Diferencia del experimento 04: -5,173 puntos de accuracy (97 aciertos menos),
+  -1,697 puntos de recall macro y -4,987 puntos de precisión macro.
+- Es el menor resultado de accuracy entre las cuatro pruebas regularizadas:
+  L2=1e-4: 59,200 %; L2=1e-5: 59,947 %; Dropout=0.2: 60,160 %.
+- La brecha pequeña de fit no acredita una mejor generalización. El ajuste
+  al entrenamiento también es limitado y las estadísticas usadas por BN
+  difieren en entrenamiento e inferencia. No se ha evaluado train por separado
+  en inferencia con el checkpoint congelado.
+- El train accuracy oscila aproximadamente en 57-58 % en la etapa final,
+  mientras validación ronda 55 %. Esto es compatible con ajuste limitado bajo
+  esta configuración, no con el patrón clásico de alta accuracy de train y
+  baja accuracy de validación. No demuestra una causa única.
+- Con batch 8, BN estima media y varianza con pocas muestras en cada paso;
+  el ruido de esas estimaciones podría contribuir al resultado. No es un
+  diagnóstico demostrado, ni evidencia de un error en la construcción.
+- El LR ya baja en la época 22, frente a la 41 del baseline, y llega a 8e-6
+  en la 36. Las mesetas tempranas y las reducciones pueden limitar el progreso.
+  Los callbacks conservan su configuración, pero reaccionan a historiales
+  diferentes. No se puede atribuir todo el descenso a batch size.
+- Por clases, frente al baseline: recall de Truck 26,556 → 17,842 %, Bus
+  55,172 → 43,103 % y Building 75,758 → 67,218 %. Cargo plane mejora de
+  74,576 a 81,356 % y Pylon de 53,125 a 71,875 %, pero la precisión de Pylon
+  baja de 62,963 a 46,000 %. Helipad mantiene recall y precisión de 0 %.
+
+Conclusión y siguiente prueba propuesta
+--------------------------------------
+BN con batch 8 no mejora el baseline y no se adopta como referencia.
+Sí resulta útil probar la misma red BN con batch 32, manteniendo LR y callbacks
+para estudiar el tamaño de lote. Se espera disponer de más muestras para
+estimar las estadísticas de BN, pero no se garantiza una mejora.
+El cambio también reduce las actualizaciones por época de 2.109 a 528: un
+máximo igual de épocas no supone igual presupuesto de actualizaciones y los
+callbacks basados en épocas también actuarán tras distintos números de pasos.
+Si no mejora, habrá que separar hipótesis sobre batch, LR y paciencia en vez
+de descartar BN solo por este resultado. No se ha creado el experimento 05.
+
+Criterios de interpretación
+--------------------------
+Priorizar validación y métricas macro. BN usa comportamientos diferentes en
+entrenamiento e inferencia: una brecha menor en fit no basta para afirmar
+que desaparece el sobreajuste. Una evaluación de train con el checkpoint
+congelado permitiría una comparación con validación en el mismo modo; no se
+añade ese paso al código para conservar el entrenamiento del baseline.
+La pérdida no añade penalización L2, a diferencia de los experimentos 01 y 02.
+Si aparecen oscilaciones no se atribuirán automáticamente a batch 8: habrá
+que contrastarlo con otra ejecución. Se conserva la ausencia de una semilla
+global del baseline, por lo que las ejecuciones individuales incluyen
+variabilidad de inicialización y barajado.
+
+Detalle de evaluación del mejor checkpoint
+-----------------------------------------
+Mean Accuracy: 55.680%
+Mean Recall: 51.671%
+Mean Precision: 50.081%
+> Cargo plane: Recall: 81.356% Precision: 88.889% Specificity: 99.670% Dice: 84.956%
+> Small car: Recall: 81.459% Precision: 65.207% Specificity: 90.750% Dice: 72.432%
+> Bus: Recall: 43.103% Precision: 51.724% Specificity: 95.885% Dice: 47.022%
+> Truck: Recall: 17.842% Precision: 38.739% Specificity: 95.838% Dice: 24.432%
+> Motorboat: Recall: 35.780% Precision: 46.429% Specificity: 97.452% Dice: 40.415%
+> Fishing vessel: Recall: 54.795% Precision: 50.000% Specificity: 97.780% Dice: 52.288%
+> Dump truck: Recall: 50.847% Precision: 51.724% Specificity: 96.813% Dice: 51.282%
+> Excavator: Recall: 56.790% Precision: 55.422% Specificity: 97.938% Dice: 56.098%
+> Building: Recall: 67.218% Precision: 65.241% Specificity: 91.402% Dice: 66.214%
+> Helipad: Recall: 0.000% Precision: 0.000% Specificity: 100.000% Dice: 0.000%
+> Storage tank: Recall: 50.658% Precision: 56.618% Specificity: 96.576% Dice: 53.472%
+> Shipping container: Recall: 60.000% Precision: 35.065% Specificity: 91.379% Dice: 44.262%
+> Pylon: Recall: 71.875% Precision: 46.000% Specificity: 98.535% Dice: 56.098%
+
