@@ -1,0 +1,166 @@
+Experimento 05 — Batch Normalization con batch size 32
+=====================================================
+
+Objetivo e hipótesis
+-------------------
+Comparar la misma red del experimento 04 aumentando únicamente batch size de
+8 a 32. La hipótesis es que disponer de más muestras para estimar la media y
+la varianza de cada lote puede mejorar el comportamiento de Batch Normalization.
+No se garantiza una mejora ni se da por demostrado que batch 8 explique por
+sí solo el resultado del experimento 04.
+
+Punto de partida y cambios
+-------------------------
+Copia del experimento 04, sin reutilizar sus pesos: el modelo se entrena desde
+cero. Cambios de código ejecutable:
+- batch_size=8 → batch_size=32 en la preparación de arrays y configuración de fit.
+  También se utiliza ese valor en las predicciones por lotes existentes.
+- EXPERIMENT_DIR apunta a experiment_05 para aislar checkpoint y predicciones.
+Las líneas sustituidas y la anotación del cambio de batch quedan comentadas.
+Los comentarios EXPERIMENTO 04 en la arquitectura documentan la incorporación
+de BN heredada, que permanece exactamente igual.
+
+Arquitectura conservada
+-----------------------
+Input(32, 32, 3) → Flatten →
+Dense(256) → BatchNormalization → ReLU →
+Dense(128) → BatchNormalization → ReLU →
+Dense(64) → BatchNormalization → ReLU → Dense(13) → Softmax.
+BN mantiene su configuración por defecto y los sesgos de Dense se conservan.
+830.477 parámetros: 829.581 entrenables y 896 no entrenables.
+Sin L2, Dropout, ruido, aumentación, CNN ni transfer learning.
+
+Resto del entrenamiento conservado
+----------------------------------
+- RGB de 32 × 32, float32, normalizado a [0, 1] y precargado una vez.
+- Split: test_size=0.1, random_state=1, shuffle=True.
+- SGD: learning_rate=1e-3, momentum=0.9, nesterov=True, clipnorm=1.0.
+- categorical_crossentropy y accuracy; máximo de 100 épocas, shuffle=True.
+- ModelCheckpoint: val_accuracy, save_best_only=True.
+- ReduceLROnPlateau: val_accuracy, factor=0.2, patience=5.
+- EarlyStopping: val_accuracy, patience=10; TerminateOnNaN.
+- Evaluación y test con el mejor checkpoint, formato JSON y rutas de datos.
+
+Rutas y ejecución
+-----------------
+PROJECT/experiments/reg_challenge/experiment_05/model.keras
+PROJECT/experiments/reg_challenge/experiment_05/prediction.json
+Las mismas rutas se utilizan para guardar y cargar, sin sobrescribir otros
+experimentos. Ejecutar todas las celdas en orden desde un kernel reiniciado.
+Las salidas heredadas se limpiaron al crear el experimento. El usuario ya ha
+completado el entrenamiento. El análisis siguiente utiliza esas salidas
+guardadas, sin ejecutar un nuevo entrenamiento.
+
+Referencias guardadas
+---------------------
+Métrica               Baseline     Exp. 03 Dropout    Exp. 04 BN batch 8
+Accuracy validación   60,853 %     60,160 %           55,680 %
+Recall macro          53,368 %     53,134 %           51,671 %
+Precisión macro       55,068 %     56,264 %           50,081 %
+Mejor época           58           85                 45
+Épocas ejecutadas     68           95                 55
+Val_loss, mejor época 1,3093       1,2284             1,3457
+
+Interpretación de la comparación
+-------------------------------
+La comparación principal es experimento 04 → 05, porque conserva BN y cambia
+el batch. Respecto al baseline cambian tanto BN como el tamaño de lote.
+Para 16.871 muestras, los pasos por época pasan de ceil(16871/8)=2.109 a
+ceil(16871/32)=528. No se cambia el LR ni se reescala automáticamente.
+Por tanto, el mismo número de épocas implica aproximadamente cuatro veces
+menos actualizaciones. La paciencia de los callbacks también representa menos
+actualizaciones y el momentum de las estadísticas de BN sigue medido por lote.
+El cambio no aísla exclusivamente el ruido de estimación de BN: también altera
+la dinámica de optimización. Una falta de mejora no demostraría que un lote
+mayor sea inútil sin revisar separadamente LR y presupuesto de entrenamiento.
+
+Comparar principalmente validación y métricas macro, además de estabilidad y
+época de convergencia. No basta con una brecha menor de fit: BN usa estadísticas
+del lote en entrenamiento y medias móviles en inferencia. Se conserva la
+inicialización sin semilla global controlada; una sola ejecución no elimina
+variabilidad aleatoria.
+
+Resultados de la ejecución
+--------------------------
+- Mejor época por val_accuracy: 45; val_accuracy=0.5685333609580994.
+- Épocas ejecutadas: 55; EarlyStopping tras diez épocas sin superar el máximo.
+- Accuracy del mejor checkpoint: 56,853 %, 1.066 aciertos sobre 1.875 muestras.
+- Recall macro: 51,255 %; precisión macro: 53,389 %.
+- Mejor época: train accuracy=72,420 %, train loss=0,8168, val_loss=1,4108.
+- Brecha registrada durante fit: aproximadamente 15,567 puntos porcentuales.
+- LR usado en esa época: 4e-5.
+- Última época: train accuracy=73,030 %, val_accuracy=56,48 % según log
+  redondeado, train loss=0,8053 y val_loss=1,4124.
+- Mínima val_loss: 1,3926 en la época 24, con val_accuracy=54,13 % según log.
+  El checkpoint se selecciona por accuracy, no por mínima pérdida.
+- ReduceLROnPlateau actúa al terminar las épocas 32, 40, 50 y 55: LR pasa a
+  2e-4, 4e-5, 8e-6 y 1,6e-6. No hay otra época con el último LR asignado.
+
+Comparación e interpretación
+---------------------------
+                               Baseline       Exp. 04 BN/8     Exp. 05 BN/32
+Accuracy validación            60,853 %       55,680 %          56,853 %
+Recall macro                   53,368 %       51,671 %          51,255 %
+Precisión macro                55,068 %       50,081 %          53,389 %
+Train accuracy, mejor época    69,750 %       57,920 %          72,420 %
+Val_loss, mejor época          1,3093         1,3457            1,4108
+Mejor época                    58             45                45
+Épocas ejecutadas              68             55                55
+
+- Respecto a BN con batch 8: +1,173 puntos de accuracy (22 aciertos),
+  -0,416 puntos de recall macro y +3,308 puntos de precisión macro.
+- Respecto al baseline: -4,000 puntos de accuracy (75 aciertos),
+  -2,113 puntos de recall macro y -1,679 puntos de precisión macro.
+- El batch mayor permite un ajuste de entrenamiento mucho más alto en esta
+  ejecución (72,42 % frente a 57,92 %), pero la mejora de validación es pequeña.
+  La separación de las curvas y la peor val_loss son compatibles con mayor
+  sobreajuste, no con una mejora uniforme de generalización.
+- La comparación de brechas usa métricas de fit: BN opera con estadísticas
+  del lote en entrenamiento y medias móviles en validación. No se ha evaluado
+  train en inferencia con el mejor checkpoint, por lo que no se trata de una
+  medición de ambos conjuntos bajo idéntico comportamiento del modelo.
+- No está demostrado que las estadísticas de BN sean la única causa: también
+  cambian las actualizaciones por época, los calendarios de LR y la variabilidad
+  de inicialización y barajado. No se detecta un error de construcción a partir
+  del código activo revisado.
+- Frente a BN/8, recall de Truck sube de 17,842 a 27,801 % y Storage tank de
+  50,658 a 55,263 %. Cargo plane baja de 81,356 a 71,186 % y Bus de 43,103 a
+  39,655 %. Helipad sigue con recall y precisión del 0 %.
+
+Conclusión y siguiente prueba propuesta
+--------------------------------------
+Subir el batch recupera parte de la accuracy de BN/8, pero no supera el
+baseline ni la prueba de Dropout. No hay evidencia para adoptar BN/32 como
+nueva configuración de referencia. La comparación tampoco descarta toda
+posibilidad de ajustar BN mediante otros hiperparámetros.
+
+Para una siguiente prueba se propone data augmentation desde el baseline:
+añadir únicamente RandomFlip('horizontal_and_vertical') antes de Flatten,
+conservando batch 8, SGD, callbacks, datos y arquitectura densa, sin L2 ni BN
+ni Dropout. La hipótesis es que variar la orientación de las imágenes aéreas
+sin cambiar su clase ayude a generalizar. Revisar que los volteos conserven
+la categoría; no se garantiza una mejora. Empezar solo con volteos evita
+introducir recortes o interpolación de rotaciones arbitrarias.
+Usar rutas propias de experiment_06. No se ha creado ni ejecutado ese notebook.
+Como alternativa incremental se podría probar Dropout(0.1), puesto que el
+experimento 03 fue el más prometedor entre las pruebas regularizadas.
+
+Detalle de evaluación del mejor checkpoint
+-----------------------------------------
+Mean Accuracy: 56.853%
+Mean Recall: 51.255%
+Mean Precision: 53.389%
+> Cargo plane: Recall: 71.186% Precision: 87.500% Specificity: 99.670% Dice: 78.505%
+> Small car: Recall: 81.763% Precision: 66.749% Specificity: 91.332% Dice: 73.497%
+> Bus: Recall: 39.655% Precision: 45.098% Specificity: 95.062% Dice: 42.202%
+> Truck: Recall: 27.801% Precision: 32.843% Specificity: 91.616% Dice: 30.112%
+> Motorboat: Recall: 37.615% Precision: 56.164% Specificity: 98.188% Dice: 45.055%
+> Fishing vessel: Recall: 54.795% Precision: 63.492% Specificity: 98.724% Dice: 58.824%
+> Dump truck: Recall: 51.695% Precision: 50.000% Specificity: 96.528% Dice: 50.833%
+> Excavator: Recall: 51.852% Precision: 54.545% Specificity: 98.049% Dice: 53.165%
+> Building: Recall: 68.320% Precision: 64.583% Specificity: 91.005% Dice: 66.399%
+> Helipad: Recall: 0.000% Precision: 0.000% Specificity: 99.893% Dice: 0.000%
+> Storage tank: Recall: 55.263% Precision: 60.870% Specificity: 96.866% Dice: 57.931%
+> Shipping container: Recall: 60.741% Precision: 46.591% Specificity: 94.598% Dice: 52.733%
+> Pylon: Recall: 65.625% Precision: 65.625% Specificity: 99.403% Dice: 65.625%
+
