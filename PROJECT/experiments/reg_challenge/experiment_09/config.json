@@ -1,0 +1,34 @@
+{
+  "seed": 42,
+  "deterministic_ops": true,
+  "initial_weights_sha256": "ac291cb810fdf9c5b2eb73182ab7520dce50a82197dd0e65f793ed86f81535ad",
+  "image_size": [
+    32,
+    32
+  ],
+  "batch_size": 8,
+  "max_epochs": 100,
+  "dropout": 0.2,
+  "hidden_units": [
+    256,
+    128,
+    64
+  ],
+  "optimizer": {
+    "name": "SGD",
+    "learning_rate": 0.001,
+    "momentum": 0.9,
+    "nesterov": true,
+    "clipnorm": 1.0
+  },
+  "split": {
+    "test_size": 0.1,
+    "random_state": 1,
+    "shuffle": true
+  },
+  "monitor": "val_accuracy",
+  "reduce_lr_factor": 0.2,
+  "lr_patience": 10,
+  "early_stop_patience": 20,
+  "tensorflow_version": "2.15.1"
+}

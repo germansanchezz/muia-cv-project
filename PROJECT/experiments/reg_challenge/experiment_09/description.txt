@@ -1,0 +1,176 @@
+Experimento 09 — Control sin Dropout y Dropout 0.2 bajo protocolo común
+====================================================================
+
+Objetivo
+--------
+Completar la comparación sin Dropout / Dropout 0.1 / Dropout 0.2 con semilla 42,
+operaciones deterministas y paciencias 10/20. El experimento 08 obtuvo 61,013 %
+con Dropout 0.1 y una brecha en inferencia de 13,529 puntos. Su control anterior
+usaba Dropout 0.1 con paciencias 5/10, por lo que faltaba un control sin Dropout
+bajo el nuevo protocolo. No se presupone que Dropout 0.2 mejore los resultados.
+
+Diseño: dos entrenamientos desde cero
+------------------------------------
+1. CONTROL en experiment_09/control/: tasa Dropout=0.0 (sin efecto).
+2. PROPUESTA en experiment_09/: tasa Dropout=0.2.
+Ambos usan idéntica inicialización, arquitectura densa y configuración de
+entrenamiento salvo la tasa. Se reinicia la semilla, sesión y optimizador para
+cada ejecución y se comprueban huellas SHA256 iguales de los pesos iniciales.
+El control conserva las capas Dropout con tasa cero: son identidad y no
+regularizan; esta representación mantiene el mismo orden de construcción de
+capas y facilita comparar con el experimento 08. No es una técnica adicional.
+
+Arquitectura
+------------
+Input(32, 32, 3) → Flatten → Dense(256, ReLU) → Dropout(tasa) →
+Dense(128, ReLU) → Dropout(tasa) → Dense(64, ReLU) → Dropout(tasa) →
+Dense(13) → Softmax. Total: 828.685 parámetros para ambas configuraciones.
+Sin L2, Batch Normalization, ruido, aumentación, CNN ni transfer learning.
+
+Configuración compartida con la propuesta del experimento 08
+-----------------------------------------------------------
+- Semilla global 42 antes de construir cada modelo; operaciones deterministas.
+- RGB de 32 × 32, float32, normalizado a [0, 1] y precargado una vez.
+- Split: validación 10 %, random_state=1, shuffle=True.
+- Batch 8; máximo 100 épocas por entrenamiento; shuffle=True en fit.
+- SGD: LR inicial 1e-3, momentum=0.9, nesterov=True, clipnorm=1.0.
+- categorical_crossentropy y accuracy.
+- ReduceLROnPlateau: monitor val_accuracy, mode=max, factor=0.2, patience=10.
+- EarlyStopping: monitor val_accuracy, mode=max, patience=20.
+- ModelCheckpoint: mejor val_accuracy; TerminateOnNaN y CSVLogger.
+- Carga del mejor checkpoint y evaluación posterior de entrenamiento y
+  validación con pesos fijos y Dropout desactivado en ambos conjuntos.
+
+Comparación con Dropout 0.1 ya entrenado
+---------------------------------------
+No se reentrena el experimento 08 ni se sobrescriben sus archivos.
+Antes de entrenar se comprueba que config.json del 08 coincide en semilla,
+versión TF, inicialización, datos declarados y parámetros del protocolo.
+Si coincide y metrics.json existe, se incluye como referencia en comparison.json.
+Si no es compatible o no está disponible, se indica el motivo y se comparan
+solo las dos ejecuciones nuevas, sin presentar la referencia como controlada.
+La configuración no contiene huellas del dataset ni versiones completas del
+entorno: la comparación presupone los mismos datos y entorno de ejecución.
+Las máscaras de Dropout y su efecto no son idénticos entre tasas distintas;
+la misma semilla no implica trayectorias iguales al modificar la regularización.
+
+Archivos y ejecución
+-------------------
+experiment_09/ y experiment_09/control/ guardan cada una:
+model.keras, history.csv, history.json, metrics.json y config.json.
+experiment_09/ guarda además comparison.json y prediction.json de test.
+Las métricas por clase y test al final corresponden a la propuesta Dropout 0.2;
+el control tiene evaluación global, checkpoint e historial propios.
+Reiniciar el kernel y ejecutar todas las celdas en orden. El notebook entrena
+primero el control y después la propuesta, cada uno desde cero y hasta 100
+épocas. No se reutilizan pesos entrenados ni se modifican pruebas anteriores.
+Las salidas heredadas se han limpiado. El usuario ya ha ejecutado ambos entrenamientos; los resultados siguientes
+proceden de sus archivos guardados y no de una nueva ejecución de análisis.
+
+Resultados de la ejecución
+--------------------------
+Fuentes: metrics.json, history.json y config.json de control y propuesta,
+comparison.json y salidas del notebook; referencia del experimento 08.
+
+Métrica en mejor checkpoint      Sin Dropout     Dropout 0.1 (08)    Dropout 0.2 (09)
+Train accuracy, inferencia       68,905 %        74,542 %            71,140 %
+Validación accuracy              59,573 %        61,013 %            60,533 %
+Brecha, inferencia               9,332 pp        13,529 pp           10,606 pp
+Train loss, inferencia           0,931113        0,748591            0,837744
+Validación loss                 1,291682        1,267663            1,238758
+Mejor época                     60              92                  95
+Épocas ejecutadas                80              100                 100
+
+- Dropout 0.1 obtiene 1.144 aciertos de 1.875: +27 frente al control (+1,440 pp).
+- Dropout 0.2 obtiene 1.135: +18 frente al control (+0,960 pp), y -9 frente
+  a Dropout 0.1 (-0,480 pp).
+- Dropout 0.2 tiene menor val_loss que control y Dropout 0.1, aunque no la
+  mayor accuracy. La reducción respecto a Dropout 0.1 es aproximadamente
+  0,028905. No prueba por sí sola mejor calibración.
+- Dropout 0.2 reduce la brecha respecto a Dropout 0.1 en aproximadamente
+  2,922 puntos; no la reduce respecto al control sin Dropout. Esto también
+  depende de la evolución del LR y la época del checkpoint seleccionado.
+- Propuesta 0.2: recall macro 52,875 %, precisión macro 55,831 %; ambas
+  inferiores a los 54,137 % y 56,636 % de la propuesta 0.1 del experimento 08.
+- Control: mejor época 60, parada EarlyStopping en la 80. LR usado 1e-3 en
+  épocas 1-38, 2e-4 en 39-51, 4e-5 en 52-70 y 8e-6 en 71-80.
+- Dropout 0.2: mejor época 95, termina por límite de 100 épocas. LR usado
+  1e-3 en 1-75 y 2e-4 en 76-100. Solo ha usado una reducción antes de parar.
+- Mínima val_loss de 0.2: 1,230140, época 89. Última época: val_loss=1,231848,
+  val_accuracy=60,320 %, train accuracy durante fit=64,845 %.
+- El train accuracy de fit de la mejor época de 0.2 es 64,430 %, frente a
+  71,140 % al evaluar sin Dropout. La comparación de brechas usa inferencia.
+- Las configuraciones y huellas de inicialización de las tres tasas son
+  compatibles según las comprobaciones guardadas. La huella compartida es
+  ac291cb810fdf9c5b2eb73182ab7520dce50a82197dd0e65f793ed86f81535ad.
+- Helipad sigue con recall y precisión de 0 %. Respecto a Dropout 0.1, 0.2
+  aumenta recall de Small car 84,802 → 90,881 % y Building 74,105 → 74,931 %,
+  pero baja Truck 31,120 → 24,896 %, Fishing vessel 56,164 → 50,685 % y
+  Shipping container 65,926 → 59,259 %. La accuracy no mejora en todas las clases.
+
+Conclusiones
+------------
+Bajo semilla 42 y el mismo protocolo, ambas tasas de Dropout mejoran accuracy
+y pérdida de validación frente al control. Es evidencia favorable en esta
+comparación, no una superioridad estadística demostrada con una sola semilla.
+No debe interpretarse que Dropout reduce necesariamente la brecha: aquí el
+control ajusta menos entrenamiento y alcanza antes la parada.
+
+Dropout 0.1 es el candidato por accuracy y métricas macro; Dropout 0.2 presenta
+menor entropía cruzada de validación y menor brecha que 0.1. No existe un ganador
+único en todas las medidas. Frente al baseline histórico sin semilla compartida,
+0.2 queda por debajo (60,533 frente a 60,853 %); esa no es la comparación
+controlada principal.
+
+Siguiente paso propuesto (no implementado)
+-----------------------------------------
+Antes de combinar más técnicas, comprobar el límite de entrenamiento: ambas
+tasas regularizadas llegan a 100 épocas y sus mejores accuracies se alcanzan
+en 92/95. El límite impide que EarlyStopping complete su paciencia después
+de esos máximos. Una prueba siguiente razonable es repetir el protocolo con
+máximo 200 épocas, conservando LR, callbacks y semilla, para las tasas 0.1 y
+0.2; incluir el control sin Dropout con ese mismo máximo para una comparación
+con idéntico presupuesto permitido. No equivale a entrenar obligatoriamente
+200 épocas: EarlyStopping puede terminar antes.
+
+La motivación es comprobar si el límite corta una mejora posible, no asumir
+que entrenar más será mejor. En las últimas épocas no hay crecimiento monótono
+de val_accuracy y puede aumentar el sobreajuste. Guardar siempre el mejor
+checkpoint. No reanudar simplemente desde el checkpoint con callbacks nuevos:
+para mantener la comparación, repetir desde cero o restaurar también el estado
+completo de optimizador y callbacks.
+
+Después, repetir las configuraciones finalistas con varias semillas compartidas
+antes de adoptar una diferencia de nueve aciertos. Como línea posterior,
+regularizar más suavemente las capas finales o combinar técnicas requeriría
+otro experimento separado. No se ha creado el experimento 10 durante esta revisión.
+
+Interpretación
+--------------
+Comparar mejores checkpoints por val_accuracy, pérdida y brecha de inferencia;
+una menor brecha no basta si empeora validación. El efecto de la regularización
+se evalúa manteniendo callbacks y LR inicial iguales, aunque sus monitores
+pueden generar calendarios distintos. Una semilla es un primer control, no
+una estimación de variabilidad: repetir varias semillas compartidas si hay
+mejoras pequeñas. La cifra histórica del baseline sin semilla (60,853 %) sigue
+siendo referencia, no reemplaza al nuevo control bajo el mismo protocolo.
+
+Evaluación por clase de Dropout 0.2
+-----------------------------------
+Mean Accuracy: 60.533%
+Mean Recall: 52.875%
+Mean Precision: 55.831%
+> Cargo plane: Recall: 77.966% Precision: 93.878% Specificity: 99.835% Dice: 85.185%
+> Small car: Recall: 90.881% Precision: 67.647% Specificity: 90.750% Dice: 77.562%
+> Bus: Recall: 54.598% Precision: 51.075% Specificity: 94.650% Dice: 52.778%
+> Truck: Recall: 24.896% Precision: 33.708% Specificity: 92.778% Dice: 28.640%
+> Motorboat: Recall: 36.697% Precision: 52.632% Specificity: 97.961% Dice: 43.243%
+> Fishing vessel: Recall: 50.685% Precision: 62.712% Specificity: 98.779% Dice: 56.061%
+> Dump truck: Recall: 49.153% Precision: 50.435% Specificity: 96.756% Dice: 49.785%
+> Excavator: Recall: 56.790% Precision: 57.500% Specificity: 98.105% Dice: 57.143%
+> Building: Recall: 74.931% Precision: 71.391% Specificity: 92.791% Dice: 73.118%
+> Helipad: Recall: 0.000% Precision: 0.000% Specificity: 100.000% Dice: 0.000%
+> Storage tank: Recall: 55.263% Precision: 67.200% Specificity: 97.620% Dice: 60.650%
+> Shipping container: Recall: 59.259% Precision: 50.955% Specificity: 95.575% Dice: 54.795%
+> Pylon: Recall: 56.250% Precision: 66.667% Specificity: 99.512% Dice: 61.017%
+
