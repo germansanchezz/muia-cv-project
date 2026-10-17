@@ -1,0 +1,178 @@
+Comparación: ffNN_example.ipynb → ffNN_mejorado.ipynb
+=================================================
+
+Alcance y procedencia
+--------------------
+Comparación del código activo y de las salidas guardadas en ambos notebooks.
+Este documento describe la configuración actual, no las versiones intermedias
+ni los experimentos de otras carpetas. No se ha vuelto a entrenar para redactarlo.
+Las celdas se identifican por su contenido, independientemente de su contador
+de ejecución en Jupyter.
+
+Cambios realizados
+------------------
+1. Lectura y preprocesamiento de imágenes (load_geoimage).
+   - Original: imágenes RGB a 224 × 224, sin normalización; conversión a float32
+     al formar cada lote en el generador.
+   - Mejorado: constantes IMAGE_SIZE=(32, 32) e IMAGE_CHANNELS=3.
+   - Lectura conjunta de bandas, con salida float32 y reducción mediante
+     rasterio.enums.Resampling.average; reorganización de CHW a HWC.
+   - División entre 255 para llevar los píxeles a [0, 1].
+   - Validación de tres canales y dtype uint8; error explícito en otro caso.
+   - Apertura mediante with para cerrar los archivos y control local de avisos
+     NotGeoreferencedWarning, en lugar de modificar globalmente su filtro.
+
+2. Arquitectura.
+   - Original: Flatten(224 × 224 × 3) → ReLU → Dense(13) → Softmax.
+   - Mejorado: Input(32 × 32 × 3) → Flatten → Dense(256, ReLU) →
+     Dense(128, ReLU) → Dense(64, ReLU) → Dense(13) → Softmax.
+   - Se elimina la ReLU directamente sobre los píxeles: las no linealidades
+     pasan a estar en las tres capas ocultas.
+   - Valores por imagen: 150.528 → 3.072 (49 veces menos).
+   - Parámetros totales: 1.956.877 → 828.685, un 57,65 % menos aproximadamente.
+   - La capa de 512 neuronas de algunas pruebas intermedias no está activa.
+   - No incorpora L2, Dropout, Batch Normalization ni data augmentation.
+
+3. Optimizador.
+   - Original: Adam(learning_rate=1e-3, beta_1=0.9, beta_2=0.999,
+     epsilon=1e-8, amsgrad=True, clipnorm=1.0).
+   - Mejorado: SGD(learning_rate=1e-3, momentum=0.9, nesterov=True,
+     clipnorm=1.0).
+   - El LR inicial actual es el mismo que en el original: 0.001.
+   - Se mantienen categorical_crossentropy y la métrica accuracy.
+
+4. Callbacks.
+   - ReduceLROnPlateau: factor 0.1 → 0.2; paciencia 10 → 5 épocas.
+   - EarlyStopping: paciencia 40 → 10 épocas.
+   - Se mantiene val_accuracy como monitor, ModelCheckpoint con
+     save_best_only=True y TerminateOnNaN.
+   - Se sigue cargando model.keras antes de evaluar y predecir el test.
+
+5. Preparación de datos y entrenamiento.
+   - Se retira el generador infinito generator_images, que abría y leía las
+     imágenes nuevamente en cada pasada de entrenamiento y validación.
+   - Se añade prepare_images, que reserva arrays float32 y carga cada entrada
+     de las listas una vez, ya reducida y normalizada.
+   - category_names y category_to_index centralizan la conversión de categorías
+     a índices; las etiquetas siguen siendo one-hot de 13 componentes.
+   - x_train/y_train y x_valid/y_valid se reutilizan durante todas las épocas.
+   - Imágenes de entrenamiento y validación: 219,7 MiB en total, según la salida.
+   - Batch size: 16 → 8 (1.055 → 2.109 pasos de entrenamiento por época).
+   - Máximo de épocas: 20 → 100.
+   - model.fit recibe arrays, batch_size y validation_data; se eliminan
+     steps_per_epoch, validation_steps y el cálculo manual con math.ceil.
+   - Se conserva shuffle=True para entrenamiento. Se añaden impresiones de
+     dimensiones, rangos de píxeles y memoria ocupada.
+
+6. Evaluación y generación de predicciones.
+   - Validación: se reutiliza x_valid, en lugar de releer las imágenes;
+     model.predict trabaja por lotes, en lugar de una llamada por imagen.
+   - y_true se recupera de y_valid; y_pred se obtiene de los argmax de las
+     predicciones y category_names.
+   - Test: se reserva x_test, se carga cada imagen de la lista una vez con el
+     mismo preprocesamiento y se realiza una predicción por lotes.
+   - Se conservan el esquema de prediction.json, los nombres de categorías,
+     las dimensiones originales 224 × 224 y las bounding boxes del JSON.
+     El tamaño reducido corresponde exclusivamente a la entrada de la red.
+
+Aspectos conservados
+--------------------
+- Dataset y 13 categorías; construcción de anotaciones y clases auxiliares.
+- train_test_split(test_size=0.1, random_state=1, shuffle=True):
+  16.871 muestras de entrenamiento y 1.875 de validación.
+- No se añade estratificación ni una semilla global del entrenamiento.
+- Cálculo y dibujo de matriz de confusión, accuracy global y métricas por clase.
+- Recorrido del conjunto test: 2.365 imágenes según las salidas guardadas.
+- Nombres model.keras y prediction.json, y rutas relativas del dataset.
+
+Resultados de validación guardados
+----------------------------------
+Métrica                               Original       Mejorado
+Accuracy global                       41,867 %       60,853 %
+Recall macro                          34,826 %       53,368 %
+Precisión macro                       38,006 %       55,068 %
+Mejor época por val_accuracy           14             58
+Épocas ejecutadas                      20             68
+val_loss en la mejor época             1193,3213      1,3093
+Accuracy de entrenamiento, mejor época  48,41 %        69,75 %
+
+La accuracy global mejora aproximadamente 18,987 puntos porcentuales, calculados
+con los valores de val_accuracy sin redondear (785 → 1.141 aciertos sobre 1.875).
+El recall macro mejora 18,542 puntos y la precisión macro 17,062 puntos, usando
+las métricas impresas. La mejora conjunta no permite atribuir un efecto individual
+a normalización, tamaño, arquitectura, optimizador o callbacks.
+
+El mejorado termina mediante EarlyStopping en la época 68, diez épocas después
+del mejor checkpoint. La última época alcanza val_accuracy=0.6075 y
+val_loss=1.3100; las métricas finales de la tabla corresponden al checkpoint de la
+época 58, no a los pesos de la última época.
+
+Persisten limitaciones: Helipad conserva recall y precisión de 0 %. En la mejor
+época del mejorado la accuracy de entrenamiento (69,75 %) supera a la de
+validación (60,85 %) aproximadamente en 8,90 puntos. No se ha demostrado que
+el sobreajuste desaparezca.
+
+Tiempos observados en los logs
+-----------------------------
+- Original: 745–889 segundos por época; suma de los tiempos impresos de sus
+  20 épocas: 16.206 segundos, aproximadamente 4 h 30 min.
+- Mejorado: 11–13 segundos por época; suma de los tiempos impresos de sus
+  68 épocas: 812 segundos, aproximadamente 13 min 32 s.
+- Estos tiempos excluyen la carga previa del dataset y no son una medición
+  controlada de aceleración: el original detectó una Tesla V100 y el mejorado
+  una RTX 4070 Ti, en ejecuciones diferentes. La precarga elimina lecturas por
+  época y la reducción de entrada disminuye el trabajo, pero sus contribuciones
+  individuales no están medidas.
+
+La generación del JSON de test no aporta una puntuación de test: no hay un
+resultado del evaluador externo que pueda documentarse como tal.
+
+Limpieza de comentarios
+----------------------
+Se han retirado los comentarios de configuraciones intermedias (por ejemplo,
+Dense(512) y SGD con otros LR) y corregido los textos desactualizados sobre
+arquitectura, optimizador y callbacks. Los fragmentos de código histórico que
+quedan comentados proceden únicamente de ffNN_example.ipynb y corresponden
+a líneas sustituidas. No se ha cambiado el código ejecutable ni las salidas
+existentes, y el notebook original no se ha modificado.
+
+Detalle de métricas por clase (salidas originales)
+------------------------------------------------
+
+ffNN_example.ipynb
+Mean Accuracy: 41.867%
+Mean Recall: 34.826%
+Mean Precision: 38.006%
+> Cargo plane: Recall: 62.712% Precision: 42.045% Specificity: 97.192% Dice: 50.340%
+> Small car: Recall: 74.772% Precision: 63.077% Specificity: 90.686% Dice: 68.428%
+> Bus: Recall: 17.816% Precision: 27.193% Specificity: 95.121% Dice: 21.528%
+> Truck: Recall: 34.025% Precision: 23.362% Specificity: 83.537% Dice: 27.703%
+> Motorboat: Recall: 30.275% Precision: 35.106% Specificity: 96.546% Dice: 32.512%
+> Fishing vessel: Recall: 13.699% Precision: 52.632% Specificity: 99.501% Dice: 21.739%
+> Dump truck: Recall: 49.153% Precision: 30.366% Specificity: 92.430% Dice: 37.540%
+> Excavator: Recall: 32.099% Precision: 44.068% Specificity: 98.161% Dice: 37.143%
+> Building: Recall: 52.066% Precision: 49.868% Specificity: 87.434% Dice: 50.943%
+> Helipad: Recall: 0.000% Precision: 0.000% Specificity: 99.678% Dice: 0.000%
+> Storage tank: Recall: 10.526% Precision: 44.444% Specificity: 98.839% Dice: 17.021%
+> Shipping container: Recall: 31.852% Precision: 36.752% Specificity: 95.747% Dice: 34.127%
+> Pylon: Recall: 43.750% Precision: 45.161% Specificity: 99.078% Dice: 44.444%
+
+
+ffNN_mejorado.ipynb
+Mean Accuracy: 60.853%
+Mean Recall: 53.368%
+Mean Precision: 55.068%
+> Cargo plane: Recall: 74.576% Precision: 81.481% Specificity: 99.449% Dice: 77.876%
+> Small car: Recall: 87.842% Precision: 72.980% Specificity: 93.079% Dice: 79.724%
+> Bus: Recall: 55.172% Precision: 52.459% Specificity: 94.885% Dice: 53.782%
+> Truck: Recall: 26.556% Precision: 39.264% Specificity: 93.941% Dice: 31.683%
+> Motorboat: Recall: 36.697% Precision: 50.633% Specificity: 97.792% Dice: 42.553%
+> Fishing vessel: Recall: 54.795% Precision: 57.143% Specificity: 98.335% Dice: 55.944%
+> Dump truck: Recall: 60.169% Precision: 55.906% Specificity: 96.813% Dice: 57.959%
+> Excavator: Recall: 59.259% Precision: 67.606% Specificity: 98.718% Dice: 63.158%
+> Building: Recall: 75.758% Precision: 65.947% Specificity: 90.608% Dice: 70.513%
+> Helipad: Recall: 0.000% Precision: 0.000% Specificity: 100.000% Dice: 0.000%
+> Storage tank: Recall: 51.316% Precision: 58.209% Specificity: 96.750% Dice: 54.545%
+> Shipping container: Recall: 58.519% Precision: 51.299% Specificity: 95.690% Dice: 54.671%
+> Pylon: Recall: 53.125% Precision: 62.963% Specificity: 99.457% Dice: 57.627%
+
