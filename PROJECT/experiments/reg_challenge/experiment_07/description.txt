@@ -1,0 +1,168 @@
+Experimento 07 — Dropout del 10 % en las capas ocultas
+====================================================
+
+Objetivo e hipótesis
+-------------------
+Comprobar si reducir la intensidad de Dropout de 0.2 a 0.1 permite recuperar
+capacidad de ajuste conservando parte de su efecto de regularización.
+El experimento 03 fue la prueba regularizada más próxima al baseline en
+accuracy (60,160 % frente a 60,853 %) y obtuvo mejor precisión macro y menor
+val_loss en sus respectivos checkpoints de mejor accuracy. Las pruebas de
+L2, BN y volteos tampoco han superado la accuracy del baseline.
+No se presupone que una tasa menor vaya a mejorar: también puede permitir
+más sobreajuste. Se probará como cambio independiente.
+
+Punto de partida y cambios
+-------------------------
+Copia del experimento 03 con la misma configuración del baseline, sin cargar
+pesos anteriores: se crea y entrena un modelo desde cero.
+- Dropout(0.2) → Dropout(0.1) después de las capas ocultas de 256, 128 y 64.
+- Se conservan comentadas las líneas sustituidas del experimento 03 y se
+  anotan los cambios en la celda del modelo.
+- Fuera de la arquitectura, solo cambian las rutas a experiment_07.
+No incorpora L2, BN, aumentación, ruido gaussiano, CNN ni transfer learning.
+
+Arquitectura
+------------
+Input(32, 32, 3) → Flatten →
+Dense(256, ReLU) → Dropout(0.1) →
+Dense(128, ReLU) → Dropout(0.1) →
+Dense(64, ReLU) → Dropout(0.1) → Dense(13) → Softmax.
+Conserva los 828.685 parámetros del baseline y del experimento 03.
+Dropout pone a cero aleatoriamente el 10 % de las activaciones durante
+entrenamiento y escala las restantes; en validación y predicción se desactiva.
+
+Configuración conservada
+-----------------------
+- RGB de 32 × 32, float32, normalizado a [0, 1] y precargado una sola vez.
+- train_test_split: test_size=0.1, random_state=1, shuffle=True.
+- Batch 8; máximo de 100 épocas; shuffle=True en fit.
+- SGD: learning_rate=1e-3, momentum=0.9, nesterov=True, clipnorm=1.0.
+- categorical_crossentropy y accuracy.
+- ModelCheckpoint: val_accuracy, save_best_only=True.
+- ReduceLROnPlateau: val_accuracy, factor=0.2, patience=5.
+- EarlyStopping: val_accuracy, patience=10; TerminateOnNaN.
+- Evaluación del mejor checkpoint y test por lotes, con el mismo formato JSON.
+
+Archivos y ejecución
+-------------------
+PROJECT/experiments/reg_challenge/experiment_07/model.keras
+PROJECT/experiments/reg_challenge/experiment_07/prediction.json
+Las rutas propias se reutilizan para guardar y cargar sin sobrescribir otras
+pruebas. La detección de la raíz del dataset no cambia.
+Las salidas heredadas se limpiaron al preparar el notebook. El usuario ya ha
+ejecutado el entrenamiento; las cifras siguientes proceden de sus salidas
+guardadas, sin reentrenar durante este análisis.
+
+Referencias guardadas
+---------------------
+Métrica               Baseline     Exp. 03 Dropout 0.2
+Accuracy validación   60,853 %      60,160 %
+Recall macro          53,368 %      53,134 %
+Precisión macro       55,068 %      56,264 %
+Val_loss, mejor época 1,3093        1,2284
+Mejor época           58            85
+Épocas ejecutadas     68            95
+
+Resultados de la ejecución
+--------------------------
+- Mejor época por val_accuracy: 46; val_accuracy=0.5770666599273682.
+- Épocas ejecutadas: 56, parada por EarlyStopping diez épocas después del máximo.
+- Accuracy del mejor checkpoint: 57,707 %, 1.082 aciertos de 1.875.
+- Recall macro: 50,724 %; precisión macro: 54,001 %.
+- Mejor época: train accuracy=60,920 %, train loss=1,1311, val_loss=1,2900.
+- Brecha durante fit: aproximadamente 3,213 puntos porcentuales; train tiene
+  Dropout activo y validación no, por lo que la brecha no usa idéntico modo.
+- LR usado en la mejor época: 4e-5.
+- Última época (56): train accuracy=61,660 %, val_accuracy=57,60 % según el log,
+  train loss=1,1277 y val_loss=1,2870.
+- Mínima val_loss registrada: 1,2859 en la época 44, no la seleccionada por
+  val_accuracy para guardar el mejor checkpoint.
+- ReduceLROnPlateau actúa al terminar las épocas 29, 44, 51 y 56, asignando
+  LR 2e-4, 4e-5, 8e-6 y 1,6e-6. No se usa este último valor en otra época.
+
+Comparación e interpretación
+---------------------------
+Métrica                         Baseline     Exp. 03 Dropout 0.2    Exp. 07 Dropout 0.1
+Accuracy validación             60,853 %    60,160 %               57,707 %
+Recall macro                    53,368 %    53,134 %               50,724 %
+Precisión macro                 55,068 %    56,264 %               54,001 %
+Train accuracy, mejor época     69,750 %    63,550 %               60,920 %
+Val_loss, mejor época           1,3093      1,2284                 1,2900
+Mejor época                     58          85                      46
+Épocas ejecutadas               68          95                      56
+Primera reducción de LR         41          62                      29
+
+Respecto al baseline: -3,147 puntos de accuracy (59 aciertos menos), -2,644
+puntos de recall macro y -1,067 puntos de precisión macro. Respecto a Dropout
+0.2: -2,453 puntos de accuracy (46 aciertos menos), -2,410 puntos de recall
+y -2,263 puntos de precisión macro. La hipótesis de mejorar con menor Dropout
+no se confirma en esta ejecución.
+
+No se observa el patrón esperado de mayor ajuste al reducir Dropout: el train
+accuracy en la mejor época también es menor que con 0.2. Las ejecuciones no
+comparten la misma inicialización ni las mismas máscaras; además, los callbacks
+actúan en momentos diferentes. Con 0.1 el LR baja a 2e-4 ya en la época 29,
+mientras con 0.2 se conserva 1e-3 hasta la 62. El experimento 07 termina en la
+56 y el 03 alcanza su mejor resultado en la 85. Esto hace plausible que el
+calendario adaptativo contribuya a limitar el progreso, pero no demuestra
+que entrenar más o mantener el LR alto vaya a mejorar la validación.
+
+La val_loss del checkpoint 46 (1,2900) es menor que la del baseline (1,3093),
+aunque accuracy y métricas macro son inferiores; son aspectos distintos de
+la predicción. No demuestra por sí sola mejor calibración ni mejor accuracy.
+
+Frente al baseline, recall de Excavator baja de 59,259 a 49,383 %, Building de
+75,758 a 69,697 % y Storage tank de 51,316 a 45,395 %. Shipping container sube
+de 58,519 a 61,481 % y Motorboat de 36,697 a 38,532 %. Helipad conserva recall
+y precisión de 0 %. No hay una mejora global que justifique adoptar Dropout 0.1.
+
+Posibles siguientes pasos (no implementados)
+-------------------------------------------
+Antes de combinar técnicas conviene controlar la inicialización y el barajado
+mediante semillas y repetir baseline/Dropout 0.1/Dropout 0.2, preferiblemente
+con varias semillas compartidas, para estimar la variabilidad entre ejecuciones.
+
+Como próximo experimento individual, se propone mantener la red de este 07
+con Dropout 0.1 y probar callbacks menos impacientes: paciencia de reducción
+LR 5 → 10 y EarlyStopping 10 → 20, conservando LR inicial, factor 0.2 y máximo
+100 épocas. La hipótesis es comprobar si las mesetas cortas disparan demasiado
+pronto las reducciones y la parada. Se estudia el protocolo de entrenamiento
+de la red regularizada, no una nueva técnica de regularización. Cambiar ambos
+callbacks estudia su política conjunta; no aísla el efecto de cada paciencia.
+Una mejora requeriría comparación bajo semillas controladas y no probaría
+que Dropout 0.1 sea superior para cualquier ejecución.
+No se ha creado ni entrenado el experimento 08 durante esta revisión.
+
+Interpretación prevista
+-----------------------
+La comparación principal es con Dropout 0.2: solo cambia su intensidad en la
+configuración de entrenamiento. Comparar también con el baseline sin Dropout.
+Priorizar validación y métricas macro; una mayor train accuracy no basta para
+adoptar la configuración. Las brechas de fit no usan idéntico comportamiento:
+train incorpora Dropout y validación no. Para comparar ambos conjuntos en
+inferencia habría que evaluarlos con el checkpoint congelado; no se añade ese
+paso al código para conservar el protocolo anterior.
+La pérdida no incorpora penalización L2. No se fija una nueva semilla global:
+la inicialización, el barajado y las máscaras Dropout varían entre ejecuciones.
+Una sola ejecución no permite atribuir toda diferencia exclusivamente a la tasa.
+
+Detalle de la evaluación del mejor checkpoint
+---------------------------------------------
+Mean Accuracy: 57.707%
+Mean Recall: 50.724%
+Mean Precision: 54.001%
+> Cargo plane: Recall: 72.881% Precision: 87.755% Specificity: 99.670% Dice: 79.630%
+> Small car: Recall: 87.538% Precision: 67.925% Specificity: 91.203% Dice: 76.494%
+> Bus: Recall: 50.575% Precision: 52.381% Specificity: 95.297% Dice: 51.462%
+> Truck: Recall: 22.822% Precision: 35.714% Specificity: 93.941% Dice: 27.848%
+> Motorboat: Recall: 38.532% Precision: 46.667% Specificity: 97.282% Dice: 42.211%
+> Fishing vessel: Recall: 52.055% Precision: 55.882% Specificity: 98.335% Dice: 53.901%
+> Dump truck: Recall: 55.932% Precision: 50.769% Specificity: 96.357% Dice: 53.226%
+> Excavator: Recall: 49.383% Precision: 62.500% Specificity: 98.662% Dice: 55.172%
+> Building: Recall: 69.697% Precision: 63.728% Specificity: 90.476% Dice: 66.579%
+> Helipad: Recall: 0.000% Precision: 0.000% Specificity: 100.000% Dice: 0.000%
+> Storage tank: Recall: 45.395% Precision: 57.500% Specificity: 97.040% Dice: 50.735%
+> Shipping container: Recall: 61.481% Precision: 43.915% Specificity: 93.908% Dice: 51.235%
+> Pylon: Recall: 53.125% Precision: 77.273% Specificity: 99.729% Dice: 62.963%
+
