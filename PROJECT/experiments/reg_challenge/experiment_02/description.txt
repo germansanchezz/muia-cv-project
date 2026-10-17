@@ -1,0 +1,38 @@
+Experiment 02: Dropout
+
+Hypothesis:
+- Test whether injecting Dropout layers with a rate of 0.4 between the dense layers 
+  prevents neuron co-adaptation and improves generalization on unseen data.
+
+Kept equal to baseline:
+- Original, unnormalized image inputs.
+- SGD with learning rate 3e-4, momentum=0.9 and nesterov=True.
+- Batch size: 16.
+- Maximum epochs: 100.
+- Same train/validation split and callbacks.
+
+Changed:
+- Architecture changed to interleave Dropout layers:
+  Flatten -> Dense(512) -> Dropout(0.4) -> Dense(256) -> Dropout(0.4) -> 
+  Dense(128) -> Dropout(0.4) -> Dense(64) -> Dropout(0.4) -> Dense(13).
+- Checkpoint and prediction paths point to experiment_02.
+
+Challenge compliance:
+- Feedforward neural network using dense layers only.
+- No CNN, transfer learning, or classical data augmentation.
+- USES dropout, which is the focus of this experiment.
+
+Results:
+- Best validation model: epoch 82.
+- Training stopped at epoch 100 (maximum epochs reached).
+- Mean Accuracy: 61.550%.
+- Mean Recall: 56.420%.
+- Mean Precision: 64.115%.
+
+Conclusions:
+- Dropout proved to be a highly effective regularization technique for this dense 
+  architecture, pushing validation accuracy past 61%.
+- Training took considerably longer to converge, reaching the maximum number of epochs 
+  without triggering early stopping, which is typical behavior when using high dropout rates.
+- The model shows excellent robustness, with training and validation metrics moving 
+  almost in tandem throughout the first 60 epochs.

@@ -1,0 +1,40 @@
+Experiment 04: Gaussian Noise
+
+Hypothesis:
+- Test whether adding Gaussian Noise (std=0.1) directly to the input acts as an 
+  effective alternative to classical spatial data augmentation, which is incompatible 
+  with Flattened input vectors.
+
+Kept equal to baseline:
+- Original, unnormalized image inputs.
+- SGD with learning rate 3e-4, momentum=0.9 and nesterov=True.
+- Batch size: 16.
+- Maximum epochs: 100.
+- Same train/validation split and callbacks.
+
+Changed:
+- Architecture changed to include input noise:
+  GaussianNoise(0.1) -> Flatten -> Dense(512) -> Dense(256) -> Dense(128) -> 
+  Dense(64) -> Dense(13).
+- Checkpoint and prediction paths point to experiment_04.
+
+Challenge compliance:
+- Feedforward neural network using dense layers only.
+- No CNN or transfer learning.
+- No classical geometric data augmentation (rotations, zoom), but USES noise injection 
+  as an alternative augmentation/regularization strategy.
+
+Results:
+- Best validation model: epoch 75.
+- Training stopped at epoch 95 due to the early-stopping criterion.
+- Mean Accuracy: 58.420%.
+- Mean Recall: 54.110%.
+- Mean Precision: 60.250%.
+
+Conclusions:
+- Input Gaussian noise acted as a solid regularizer. While the absolute accuracy peak 
+  (~58.4%) was lower than Dropout or BN, the generalization gap was exceptionally narrow.
+- By artificially corrupting the input pixels, the model was forced to learn more robust 
+  features instead of memorizing specific pixel intensities.
+- This confirms that feature-level noise is a viable alternative to spatial augmentation 
+  when dealing with strictly dense architectures.
