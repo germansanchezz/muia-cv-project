@@ -4,7 +4,7 @@ Experimento 01 — Penalización de norma L2
 Punto de partida
 ----------------
 reg_challenge_baseline.ipynb, copiado sin cambios en la configuración de
-entrenamiento, datos, callbacks y rutas.
+entrenamiento, datos y callbacks; las rutas de resultados se aíslan en experiment_01.
 
 Objetivo
 --------
@@ -38,8 +38,8 @@ Configuración conservada
 - EarlyStopping: monitor val_accuracy, patience=10.
 - ModelCheckpoint con save_best_only=True y TerminateOnNaN.
 - Evaluación y predicción por lotes, carga del mejor checkpoint y formato JSON.
-- Rutas exactamente iguales al baseline: model.keras y prediction.json bajo
-  PROJECT/experiments/reg_challenge/. No son archivos exclusivos del experimento.
+- Rutas de resultados propias: model.keras y prediction.json bajo
+  PROJECT/experiments/reg_challenge/experiment_01/.
 
 Estado y resultados
 -------------------
@@ -107,10 +107,13 @@ próxima prueba es que una penalización más suave (por ejemplo 1e-5) conserve
 más capacidad de ajuste. Requeriría validación; todavía no se ha creado ni
 modificado el experimento 02.
 
-Las rutas permanecen iguales al baseline por la configuración solicitada:
-el entrenamiento guarda model.keras y prediction.json en reg_challenge/.
-Los números documentados aquí proceden de las salidas del notebook, no de
-suponer que ese checkpoint compartido se conservará en futuras ejecuciones.
+Rutas de resultados corregidas tras la ejecución:
+EXPERIMENT_DIR apunta a PROJECT/experiments/reg_challenge/experiment_01/.
+MODEL_PATH y PREDICTION_PATH se usan tanto para guardar como para cargar.
+Se han trasladado a esa carpeta el model.keras y prediction.json generados
+anteriormente en reg_challenge/. El checkpoint contiene L2=1e-4 en las tres
+capas ocultas, coherente con el experimento 01. Las salidas históricas del
+notebook conservan las rutas usadas en aquella ejecución.
 
 Detalle de la evaluación del mejor checkpoint
 ---------------------------------------------
