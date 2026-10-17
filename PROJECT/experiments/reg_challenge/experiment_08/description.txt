@@ -1,0 +1,187 @@
+Experimento 08 — Dropout 0.1 con semilla y comparación de paciencias
+=================================================================
+
+Objetivo
+--------
+Comprobar si una política de reducción de LR y parada más paciente mejora el
+entrenamiento con Dropout 0.1. El experimento 07 obtuvo 57,707 % de accuracy,
+frente a 60,160 % con Dropout 0.2 y 60,853 % del baseline, pero eran ejecuciones
+sin inicialización global controlada y calendarios adaptativos diferentes.
+No se cambia ahora la arquitectura ni se combinan nuevas técnicas.
+
+Diseño: dos entrenamientos completos en el mismo notebook
+--------------------------------------------------------
+1. CONTROL, en experiment_08/control/: Dropout 0.1, semilla 42,
+   ReduceLROnPlateau patience=5, EarlyStopping patience=10.
+2. PROPUESTA, en experiment_08/: misma red y semilla; paciencias 10 y 20.
+Ambos parten desde cero con optimizadores nuevos. Se reinicia la semilla antes
+de construir cada modelo; se comprueba que la huella SHA256 de sus pesos
+iniciales sea idéntica. No se reutilizan pesos entrenados del control.
+Se habilitan operaciones deterministas de TensorFlow. Esto puede reducir el
+rendimiento; la reproducibilidad se refiere al mismo entorno de software y
+hardware, no garantiza igualdad entre versiones o dispositivos distintos.
+El usuario ha ejecutado ambos entrenamientos, cada uno con un máximo de 100 épocas.
+La carga de imágenes se hace una sola vez y se comparte en memoria.
+
+Cambios respecto al experimento 07
+---------------------------------
+- tf.keras.utils.set_random_seed(42) y enable_op_determinism().
+- Factoría del mismo modelo para reiniciarlo antes de cada entrenamiento.
+- Factoría de SGD y callbacks para evitar compartir estado entre ejecuciones.
+- Control con las paciencias anteriores; propuesta con paciencias 10/20.
+- Historias CSV por época y JSON al terminar, configuración y evaluación final.
+- Tras cada entrenamiento: cargar su mejor checkpoint por val_accuracy y
+  evaluar x_train/y_train y x_valid/y_valid con evaluate. Dropout está
+  desactivado y los pesos fijos; evaluar no actualiza pesos.
+- Guardar brecha de accuracy en inferencia y comparación de ambos resultados.
+- La matriz de confusión, métricas por clase y predicciones de test al final
+  del notebook corresponden a la PROPUESTA. El control tiene evaluación global
+  de train/validación y checkpoint, pero no genera prediction.json de test.
+- Conservar código sustituido comentado y anotar los cambios de cada celda.
+
+Configuración mantenida
+----------------------
+Input(32, 32, 3) → Flatten → Dense(256, ReLU) → Dropout(0.1) →
+Dense(128, ReLU) → Dropout(0.1) → Dense(64, ReLU) → Dropout(0.1) →
+Dense(13) → Softmax. Total: 828.685 parámetros.
+Imágenes RGB float32 normalizadas a [0, 1], precargadas. Split 10 % de
+validación con random_state=1 y shuffle=True. Batch 8; máximo 100 épocas.
+SGD: LR inicial 1e-3, momentum=0.9, nesterov=True, clipnorm=1.0.
+Categorical crossentropy y accuracy. Ambos callbacks monitorizan val_accuracy
+con mode=max. ReduceLROnPlateau conserva factor=0.2. ModelCheckpoint guarda
+el mejor modelo; se conserva TerminateOnNaN. Sin L2, BN ni aumentación.
+
+Archivos
+--------
+experiment_08/ y experiment_08/control/ guardan cada una:
+- model.keras: mejor checkpoint por val_accuracy.
+- history.csv: métricas por época, escrito durante fit.
+- history.json: historial al finalizar el entrenamiento.
+- config.json: semilla, hiperparámetros, versión TF y huella de pesos iniciales.
+- metrics.json: mejor época, épocas ejecutadas, train/validación en inferencia
+  y brecha en puntos porcentuales.
+Solo experiment_08/ guarda comparison.json y el prediction.json de test.
+No se sobrescriben los archivos de los experimentos anteriores.
+
+Ejecución
+---------
+Reiniciar el kernel y ejecutar todas las celdas en orden. La celda de fit
+entrena primero el control, lo evalúa y guarda sus resultados; después entrena
+la propuesta y compara. Puede tardar aproximadamente el tiempo de dos pruebas,
+además del coste de determinismo y evaluación. No se han ejecutado estos
+entrenamientos para preparar el experimento. Las salidas heredadas se limpiaron.
+Las verificaciones técnicas no aportan resultados experimentales de validación.
+
+Resultados de la ejecución
+--------------------------
+Fuente: metrics.json, config.json, history.json, comparison.json y salidas
+conservadas del notebook. No se ha vuelto a entrenar para redactar el análisis.
+
+Métrica                              Control 5/10     Propuesta 10/20
+Mejor época por val_accuracy          52               92
+Épocas ejecutadas                     62               100
+Train accuracy en inferencia          68,994 %         74,542 %
+Validación accuracy en inferencia     60,373 %         61,013 %
+Brecha en inferencia                  8,621 pp         13,529 pp
+Train loss en inferencia              0,911627         0,748591
+Validación loss del checkpoint        1,257843         1,267663
+
+- La propuesta gana 0,640 puntos de accuracy frente al control: 1.144 aciertos
+  frente a 1.132, doce aciertos más sobre 1.875 imágenes.
+- La train accuracy en inferencia sube 5,548 puntos y la brecha aumenta 4,908
+  puntos. La pérdida de validación del checkpoint sube aproximadamente 0,009820.
+  Mayor paciencia mejora ligeramente accuracy en esta comparación, pero no
+  reduce la brecha ni mejora todas las medidas de generalización.
+- Propuesta: recall macro 54,137 %, precisión macro 56,636 %.
+- Baseline histórico: accuracy 60,853 %, recall 53,368 %, precisión 55,068 %.
+  La propuesta lo supera solo 0,160 puntos de accuracy (tres aciertos),
+  0,769 de recall y 1,568 de precisión macro. No es una comparación controlada
+  con la misma semilla y protocolo: no demuestra que Dropout cause esa mejora.
+- Las dos configuraciones tienen la misma huella SHA256 de pesos iniciales:
+  ac291cb810fdf9c5b2eb73182ab7520dce50a82197dd0e65f793ed86f81535ad.
+  Sus pérdidas y accuracies de train y validación coinciden exactamente hasta
+  la época 41. La primera diferencia aparece en la época 42, cuando el control
+  comienza a usar un LR reducido y la propuesta mantiene el inicial. Es una
+  comprobación adicional de la coherencia de la comparación bajo semilla 42.
+- Control: LR usado 1e-3 en épocas 1-41; 2e-4 en 42-57; 4e-5 en 58-62.
+  Se detiene por EarlyStopping en la 62, diez épocas después del máximo.
+- Propuesta: LR usado 1e-3 en épocas 1-62; 2e-4 en 63-80; 4e-5 en 81-100.
+  Termina por alcanzar el máximo de 100 épocas, no por EarlyStopping.
+- La mínima val_loss del control es 1,249865 en la época 60; la de la propuesta
+  es 1,257164 en la 44. Los checkpoints siguen seleccionados por accuracy.
+- En la época 92, fit muestra train accuracy 68,390 %, pero al evaluar ese
+  mismo checkpoint sin Dropout resulta 74,542 %. Esta diferencia ilustra por
+  qué no debe confundirse la brecha de fit con la brecha en inferencia.
+- En la última época de la propuesta: train accuracy de fit 68,739 %,
+  val_accuracy 60,693 %, train loss 0,911041 y val_loss 1,267830.
+- Helipad sigue con recall y precisión 0 %. Frente al baseline histórico,
+  recall de Truck sube 26,556 → 31,120 %, Shipping container 58,519 → 65,926 %
+  y Storage tank 51,316 → 54,605 %. Dump truck baja 60,169 → 53,390 %.
+
+Conclusiones
+------------
+La política de callbacks influye: con idéntica inicialización, más paciencia
+permite mayor ajuste al entrenamiento y una mejora modesta de accuracy de
+validación. La hipótesis de que el calendario anterior limitaba el progreso
+recibe apoyo en esta semilla, pero no puede afirmarse que fuera la única causa
+de los resultados anteriores ni separar el efecto de las dos paciencias.
+
+La medición en inferencia muestra una brecha real de 13,529 puntos. Esto es
+compatible con sobreajuste y sugiere que seguir aumentando épocas no es la
+primera prioridad: ya se observa más ajuste en train sin una mejora equivalente
+en validación y sin reducir su pérdida. No significa que una época adicional
+no pueda mejorar, sino que los resultados no justifican asumirlo.
+
+Próxima comparación recomendada (no creada)
+-------------------------------------------
+Antes de atribuir una mejora a regularización, ejecutar el baseline SIN Dropout
+con semilla 42, operaciones deterministas y las mismas paciencias 10/20 del
+experimento 08. Evaluar train y validación con el mejor checkpoint y guardar
+historiales. Es el control que falta para medir el efecto de Dropout 0.1 bajo
+el nuevo protocolo.
+
+Si se quiere probar otra intensidad en paralelo o después, repetir esta misma
+configuración con Dropout 0.2, cambiando solo la tasa. Su resultado histórico
+fue prometedor, pero carecía de semilla compartida. La brecha observada hace
+razonable estudiar esa penalización estocástica más intensa, sin garantía de
+mejor accuracy. Mantener datos, LR, callbacks y rutas independientes.
+No combinar inicialmente L2, BN y aumentación. Repetir las configuraciones
+más prometedoras con varias semillas compartidas antes de adoptar una mejora
+pequeña. No se ha creado el experimento 09 durante esta revisión.
+
+Interpretación
+--------------
+La comparación causal principal es CONTROL → PROPUESTA bajo la misma semilla.
+Se estudian conjuntamente ambas paciencias, sin aislar cada callback. Una
+mejora no puede atribuirse solo a introducir semilla, que no es regularización.
+Las cifras históricas del baseline y del experimento 07 son referencias,
+no controles con la misma inicialización. Para aislar también el efecto de
+Dropout haría falta ejecutar el baseline sin Dropout con semillas compartidas.
+La evaluación de train/validación con el mejor checkpoint mide ambos conjuntos
+en inferencia y evita comparar train con Dropout frente a validación sin él;
+una brecha no determina por sí sola la causa del error. Comparar accuracy,
+pérdidas y métricas por clase. Las máscaras y pesos siguen trayectorias
+aleatorias, ahora reproducibles en el mismo entorno. Una sola semilla no
+estima la variabilidad de los resultados: si mejora, repetir con más semillas
+antes de afirmar superioridad general. Ajustar reiteradamente sobre la misma
+validación puede favorecer resultados específicos de esa partición.
+
+Métricas por clase de la propuesta
+----------------------------------
+Mean Accuracy: 61.013%
+Mean Recall: 54.137%
+Mean Precision: 56.636%
+> Cargo plane: Recall: 77.966% Precision: 92.000% Specificity: 99.780% Dice: 84.404%
+> Small car: Recall: 84.802% Precision: 73.421% Specificity: 93.467% Dice: 78.702%
+> Bus: Recall: 52.299% Precision: 54.819% Specificity: 95.591% Dice: 53.529%
+> Truck: Recall: 31.120% Precision: 36.232% Specificity: 91.922% Dice: 33.482%
+> Motorboat: Recall: 40.367% Precision: 49.438% Specificity: 97.452% Dice: 44.444%
+> Fishing vessel: Recall: 56.164% Precision: 68.333% Specificity: 98.946% Dice: 61.654%
+> Dump truck: Recall: 53.390% Precision: 50.806% Specificity: 96.528% Dice: 52.066%
+> Excavator: Recall: 56.790% Precision: 61.333% Specificity: 98.384% Dice: 58.974%
+> Building: Recall: 74.105% Precision: 68.798% Specificity: 91.931% Dice: 71.353%
+> Helipad: Recall: 0.000% Precision: 0.000% Specificity: 100.000% Dice: 0.000%
+> Storage tank: Recall: 54.605% Precision: 63.846% Specificity: 97.272% Dice: 58.865%
+> Shipping container: Recall: 65.926% Precision: 50.568% Specificity: 95.000% Dice: 57.235%
+> Pylon: Recall: 56.250% Precision: 66.667% Specificity: 99.512% Dice: 61.017%
+
