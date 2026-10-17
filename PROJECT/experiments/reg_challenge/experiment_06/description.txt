@@ -1,0 +1,184 @@
+Experimento 06 — Data augmentation mediante volteos
+==================================================
+
+Objetivo e hipótesis
+-------------------
+Evaluar aumentación geométrica como técnica independiente para mejorar la
+generalización del baseline. Las pruebas L2, Dropout y BN realizadas hasta ahora
+no han superado su accuracy de validación en las ejecuciones guardadas.
+Se parte de la hipótesis de que voltear estas imágenes aéreas conserva la
+categoría del objeto y permite aprender con distintas orientaciones.
+No se garantiza una mejora. Es conveniente inspeccionar ejemplos transformados
+para comprobar que esta hipótesis sea adecuada para las clases del dataset.
+
+Punto de partida y cambio
+------------------------
+Copia de reg_challenge_baseline.ipynb; modelo nuevo entrenado desde cero.
+En la celda de arquitectura:
+- Importar RandomFlip desde tensorflow.keras.layers.
+- Añadir RandomFlip('horizontal_and_vertical') inmediatamente después de Input
+  y antes de Flatten, cuando los datos siguen teniendo forma de imagen RGB.
+- Mantener las capas densas y la salida exactamente iguales al baseline.
+Se conserva la importación sustituida como comentario y se anota la capa añadida.
+
+Arquitectura
+------------
+Input(32, 32, 3) → RandomFlip(horizontal_and_vertical) → Flatten →
+Dense(256, ReLU) → Dense(128, ReLU) → Dense(64, ReLU) → Dense(13) → Softmax.
+828.685 parámetros, igual que el baseline; la aumentación no añade pesos.
+
+Funcionamiento de la aumentación
+--------------------------------
+RandomFlip aplica aleatoriamente volteos horizontales y/o verticales durante
+fit. Puede conservar la imagen sin cambios, voltear un eje o ambos; nuevas
+transformaciones se muestrean durante el entrenamiento, no se fijan una sola
+vez al cargar el dataset. Las etiquetas de clasificación se conservan.
+No se añaden rotaciones arbitrarias, zoom, traslaciones ni recortes: los
+volteos conservan tamaño y valores de píxel sin interpolación.
+En validación, evaluate y predict, la capa no transforma las imágenes.
+La entrada sigue normalizada a [0, 1]. No hay que multiplicar el número de
+muestras, guardar copias en disco ni releer las imágenes por época: se reutiliza
+la precarga original y la transformación se aplica en el modelo.
+No se modifican las anotaciones o bounding boxes exportadas del test, porque
+el test no se aumenta y la tarea entrenada es clasificación.
+
+Configuración conservada
+-----------------------
+- RGB de 32 × 32, float32, normalizado a [0, 1] y precargado una vez.
+- Split: test_size=0.1, random_state=1 y shuffle=True.
+- Batch 8; máximo de 100 épocas; shuffle=True en fit.
+- SGD: learning_rate=1e-3, momentum=0.9, nesterov=True, clipnorm=1.0.
+- categorical_crossentropy y accuracy.
+- ModelCheckpoint: monitor val_accuracy, save_best_only=True.
+- ReduceLROnPlateau: monitor val_accuracy, factor=0.2, patience=5.
+- EarlyStopping: monitor val_accuracy, patience=10; TerminateOnNaN.
+- Evaluación del mejor checkpoint y predicciones por lotes.
+- Sin L2, Dropout, BN ni ruido gaussiano para estudiar aumentación por separado.
+- Sin CNN ni transfer learning: se conserva la red densa y se usa aumentación
+  expresamente permitida por el enunciado.
+
+Archivos y ejecución
+-------------------
+Fuera de la celda del modelo solo cambia la configuración de rutas de salida:
+PROJECT/experiments/reg_challenge/experiment_06/model.keras
+PROJECT/experiments/reg_challenge/experiment_06/prediction.json
+MODEL_PATH y PREDICTION_PATH se usan tanto para guardar como para cargar.
+Las rutas del dataset conservan la detección automática de PROJECT.
+Las salidas heredadas se limpiaron al preparar el experimento. El usuario ya
+ha ejecutado el entrenamiento; este análisis utiliza las salidas guardadas,
+sin ejecutar de nuevo ni modificar el notebook.
+
+Referencias de ejecuciones guardadas
+-----------------------------------
+Configuración             Accuracy validación    Recall macro    Precisión macro
+Baseline                  60,853 %               53,368 %        55,068 %
+Exp. 01 L2=1e-4           59,200 %               52,135 %        53,786 %
+Exp. 02 L2=1e-5           59,947 %               52,368 %        55,729 %
+Exp. 03 Dropout=0.2       60,160 %               53,134 %        56,264 %
+Exp. 04 BN, batch 8       55,680 %               51,671 %        50,081 %
+Exp. 05 BN, batch 32      56,853 %               51,255 %        53,389 %
+
+Resultados de la ejecución
+--------------------------
+- Mejor época por val_accuracy: 49; val_accuracy=0.5759999752044678.
+- Épocas ejecutadas: 59; EarlyStopping tras diez épocas sin superar ese máximo.
+- Accuracy del mejor checkpoint: 57,600 %, 1.080 aciertos sobre 1.875 muestras.
+- Recall macro: 50,085 %; precisión macro: 51,623 %.
+- Mejor época: train accuracy=59,970 %, train loss=1,1971, val_loss=1,3161.
+- Brecha de fit en esa época: 2,370 puntos porcentuales. Train incluye volteos
+  y validación no, por lo que no es una comparación en el mismo modo.
+- LR usado en la mejor época: 4e-5.
+- Última época (59): train accuracy=60,010 %, val_accuracy=57,28 % según el log
+  redondeado, train loss=1,1906, val_loss=1,3108.
+- Mínima val_loss registrada: 1,3108 en la época 59. El checkpoint se selecciona
+  por accuracy y corresponde a la época 49, no al mínimo de val_loss.
+- ReduceLROnPlateau actúa al terminar las épocas 34, 42, 54 y 59: el LR pasa a
+  2e-4, 4e-5, 8e-6 y 1,6e-6. No se entrena otra época con el último LR asignado.
+
+Comparación y conclusiones
+--------------------------
+                           Baseline       Exp. 03 Dropout    Exp. 06 Volteos
+Accuracy validación        60,853 %       60,160 %            57,600 %
+Recall macro               53,368 %       53,134 %            50,085 %
+Precisión macro            55,068 %       56,264 %            51,623 %
+Val_loss, mejor accuracy   1,3093         1,2284              1,3161
+Mejor época                58             85                  49
+Épocas ejecutadas          68             95                  59
+
+El experimento pierde 61 aciertos frente al baseline (-3,253 puntos de
+accuracy), 3,283 puntos de recall macro y 3,445 de precisión macro. Tampoco
+supera a las pruebas L2 ni Dropout en accuracy; sí supera las dos pruebas BN.
+No hay evidencia para adoptar estos volteos como mejora del baseline.
+
+La accuracy de entrenamiento sobre imágenes aumentadas queda aproximadamente
+en el 60 %. Esto es compatible con una tarea de aprendizaje más exigente y
+un ajuste limitado bajo este entrenamiento. No demuestra que las imágenes
+volteadas tengan categorías incorrectas ni que la aumentación sea inútil.
+Una red densa con Flatten no incorpora invariancia a los volteos: debe aprender
+las distintas disposiciones de los píxeles. Esa carga adicional podría requerir
+otra intensidad o mayor presupuesto de entrenamiento; es una hipótesis.
+
+El LR empieza a reducirse en la época 34 y llega a 4e-5 en la 42. Los callbacks
+pueden limitar el avance de una configuración que aprende más despacio, pero
+el log no prueba que prolongar el entrenamiento vaya a mejorar accuracy.
+La val_loss continúa bajando ligeramente hasta la época 59 mientras accuracy
+no supera el máximo de la 49: los monitores responden a criterios diferentes.
+La pequeña brecha de fit no acredita que se haya eliminado el sobreajuste,
+porque se compara entrenamiento aumentado con validación sin transformar.
+
+Frente al baseline, recall de Truck baja de 26,556 a 19,502 %, Motorboat de
+36,697 a 31,193 % y Shipping container de 58,519 a 54,074 %. Helipad sigue con
+recall y precisión de 0 %. El efecto no se limita a una sola categoría.
+Estas son ejecuciones individuales sin semillas globales controladas; no
+puede atribuirse toda diferencia exclusivamente a los volteos.
+
+Posibles siguientes pasos (propuestas, aún no implementadas)
+-----------------------------------------------------------
+Prioridad: partir del baseline y probar Dropout(0.1) después de las tres capas
+ocultas, sin L2 ni BN ni aumentación, conservando el resto del entrenamiento.
+Dropout(0.2) fue la prueba regularizada más próxima en accuracy al baseline,
+con mejor precisión macro y menor val_loss en sus mejores checkpoints.
+La hipótesis es que una tasa menor conserve parte de ese efecto y permita
+más ajuste. No se garantiza superar el baseline.
+
+Alternativa para estudiar aumentación: repetir el experimento 06 cambiando
+solo el modo de volteo a horizontal, o estudiar la paciencia de callbacks
+por separado. No combinar inicialmente cambios de técnica, intensidad y LR.
+Antes de afirmar una mejora general conviene repetir configuraciones con
+semillas controladas; varias decisiones sobre la misma validación también
+pueden favorecer ajustes específicos a esa partición.
+No se ha creado el experimento 07 durante este análisis.
+
+Interpretación prevista
+-----------------------
+Comparar principalmente validación y métricas por clase. Una menor accuracy
+de entrenamiento no implica por sí sola mejor generalización: entrenamiento
+incluye imágenes aumentadas, mientras validación conserva las originales.
+Para medir una brecha comparable sería útil evaluar también train en inferencia
+con el mejor checkpoint; no se añade ese paso al entrenamiento del baseline.
+La pérdida no incluye penalizaciones L2. Los volteos pueden hacer más difícil
+el entrenamiento y alterar cuándo actúan los callbacks. Se mantienen las
+paciencias para esta primera comparación, sin garantizar que sean óptimas.
+La partición está fijada pero no existe una semilla global de entrenamiento;
+una sola ejecución no separa completamente la técnica de la variabilidad
+aleatoria de inicialización, barajado y transformaciones.
+
+Detalle de evaluación del mejor checkpoint
+-----------------------------------------
+Mean Accuracy: 57.600%
+Mean Recall: 50.085%
+Mean Precision: 51.623%
+> Cargo plane: Recall: 69.492% Precision: 85.417% Specificity: 99.615% Dice: 76.636%
+> Small car: Recall: 86.930% Precision: 68.095% Specificity: 91.332% Dice: 76.368%
+> Bus: Recall: 53.448% Precision: 50.543% Specificity: 94.650% Dice: 51.955%
+> Truck: Recall: 19.502% Precision: 33.571% Specificity: 94.308% Dice: 24.672%
+> Motorboat: Recall: 31.193% Precision: 45.333% Specificity: 97.678% Dice: 36.957%
+> Fishing vessel: Recall: 53.425% Precision: 49.367% Specificity: 97.780% Dice: 51.316%
+> Dump truck: Recall: 53.390% Precision: 54.310% Specificity: 96.983% Dice: 53.846%
+> Excavator: Recall: 53.086% Precision: 53.750% Specificity: 97.938% Dice: 53.416%
+> Building: Recall: 74.105% Precision: 63.744% Specificity: 89.881% Dice: 68.535%
+> Helipad: Recall: 0.000% Precision: 0.000% Specificity: 100.000% Dice: 0.000%
+> Storage tank: Recall: 49.342% Precision: 64.103% Specificity: 97.562% Dice: 55.762%
+> Shipping container: Recall: 54.074% Precision: 44.242% Specificity: 94.713% Dice: 48.667%
+> Pylon: Recall: 53.125% Precision: 58.621% Specificity: 99.349% Dice: 55.738%
+
