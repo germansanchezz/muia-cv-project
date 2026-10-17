@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "max_epochs": 200,
+  "runs": {
+    "control": {
+      "dropout": 0.0,
+      "metrics": {
+        "best_epoch": 60,
+        "epochs_run": 80,
+        "train_inference": {
+          "loss": 0.9311133623123169,
+          "accuracy": 0.6890522241592407
+        },
+        "validation_inference": {
+          "loss": 1.291682243347168,
+          "accuracy": 0.5957333445549011
+        },
+        "accuracy_gap_pp": 9.33188796043396,
+        "best_val_accuracy_fit": 0.5957333445549011,
+        "best_val_accuracy_first_100": 0.5957333445549011,
+        "best_epoch_first_100": 60,
+        "gain_after_100_pp": 0.0
+      },
+      "delta_vs_control_pp": 0.0
+    },
+    "dropout_01": {
+      "dropout": 0.1,
+      "metrics": {
+        "best_epoch": 92,
+        "epochs_run": 112,
+        "train_inference": {
+          "loss": 0.748591423034668,
+          "accuracy": 0.7454211115837097
+        },
+        "validation_inference": {
+          "loss": 1.2676631212234497,
+          "accuracy": 0.6101333498954773
+        },
+        "accuracy_gap_pp": 13.528776168823242,
+        "best_val_accuracy_fit": 0.6101333498954773,
+        "best_val_accuracy_first_100": 0.6101333498954773,
+        "best_epoch_first_100": 92,
+        "gain_after_100_pp": 0.0
+      },
+      "delta_vs_control_pp": 1.4400005340576172
+    },
+    "dropout_02": {
+      "dropout": 0.2,
+      "metrics": {
+        "best_epoch": 107,
+        "epochs_run": 127,
+        "train_inference": {
+          "loss": 0.8123502731323242,
+          "accuracy": 0.7199336290359497
+        },
+        "validation_inference": {
+          "loss": 1.2308043241500854,
+          "accuracy": 0.6090666651725769
+        },
+        "accuracy_gap_pp": 11.08669638633728,
+        "best_val_accuracy_fit": 0.6090666651725769,
+        "best_val_accuracy_first_100": 0.6053333282470703,
+        "best_epoch_first_100": 95,
+        "gain_after_100_pp": 0.3733336925506592
+      },
+      "delta_vs_control_pp": 1.3333320617675781
+    }
+  },
+  "selected_run": "dropout_01",
+  "selected_dropout": 0.1,
+  "selection_rule": "max val_accuracy; ties: min val_loss"
+}

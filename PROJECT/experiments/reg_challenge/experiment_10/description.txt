@@ -1,0 +1,167 @@
+Experimento 10 — Dropout 0 / 0.1 / 0.2 con máximo de 200 épocas
+============================================================
+
+Objetivo e hipótesis
+-------------------
+Comprobar si el límite de 100 épocas cortó el progreso de las configuraciones
+regularizadas. Con semilla 42 y paciencias 10/20, Dropout 0.1 obtuvo su mejor
+accuracy en la época 92 y Dropout 0.2 en la 95; ambos llegaron al límite.
+No se presupone una mejora: entrenar más también puede aumentar sobreajuste.
+
+Diseño
+------
+Tres entrenamientos completos desde cero:
+- control/: tasa 0.0, sin Dropout efectivo.
+- dropout_01/: tasa 0.1 en las tres capas ocultas.
+- dropout_02/: tasa 0.2 en las tres capas ocultas.
+Todos tienen el mismo máximo permitido de 200 épocas y EarlyStopping puede
+terminarlos antes. La semilla 42 y la huella de pesos iniciales se verifican
+en cada configuración. Cada ejecución tiene optimizador y callbacks nuevos.
+Se mantienen las capas Dropout con tasa cero en el control, como identidad,
+para conservar el orden de construcción de las capas y la inicialización.
+La carga de imágenes se comparte en memoria y no se repite por época.
+
+Cambios respecto al protocolo anterior
+-------------------------------------
+- epochs=100 → epochs=200; no cambia el LR ni las paciencias.
+- Se ejecutan las tres tasas bajo ese mismo presupuesto, sin depender de
+  referencias históricas externas para la comparación principal.
+- Se registra el mejor val_accuracy hasta la época 100 y hasta el final de
+  cada ejecución: permite medir la ganancia observada tras el límite anterior.
+- Las rutas y resúmenes se aíslan en experiment_10.
+- Se selecciona el modelo de mayor accuracy de validación; en empate, el de
+  menor pérdida de validación. Las celdas finales de métricas por clase y test
+  usan ese modelo. Se registra cuál fue seleccionado; no se ocultan los otros.
+
+Configuración conservada
+-----------------------
+Input(32,32,3) → Flatten → Dense(256, ReLU) → Dropout(tasa) →
+Dense(128, ReLU) → Dropout(tasa) → Dense(64, ReLU) → Dropout(tasa) →
+Dense(13) → Softmax. 828.685 parámetros por configuración.
+Semilla global 42, operaciones deterministas; RGB float32 normalizado a [0,1],
+precargado; split 10 % validación, random_state=1, shuffle=True; batch 8.
+SGD: LR inicial 1e-3, momentum=0.9, nesterov=True, clipnorm=1.0.
+Categorical crossentropy y accuracy. ModelCheckpoint por mejor val_accuracy;
+ReduceLROnPlateau por val_accuracy, factor=0.2, patience=10; EarlyStopping
+por val_accuracy, patience=20; TerminateOnNaN y CSVLogger.
+Sin L2, Batch Normalization, aumentación, ruido, CNN ni transfer learning.
+
+Evaluación y archivos
+--------------------
+Tras cada entrenamiento se carga el mejor checkpoint por val_accuracy y se
+evalúan train y validación con Dropout desactivado y pesos fijos. Se guarda
+la brecha en inferencia, distinta de la brecha registrada durante fit.
+Cada subcarpeta control/, dropout_01/ y dropout_02/ guarda:
+model.keras, history.csv, history.json, metrics.json y config.json.
+metrics.json añade best_val_accuracy_first_100, best_epoch_first_100 y
+gain_after_100_pp. Si se detiene antes de 100 épocas, se usa toda su historia.
+comparison.json en experiment_10 guarda resultados parciales tras cada prueba
+y el resumen final, incluyendo la configuración seleccionada y diferencias
+respecto al control. El checkpoint seleccionado se copia también a
+experiment_10/model.keras, y sus predicciones de test se escriben en
+experiment_10/prediction.json. Los checkpoints de cada tasa se conservan.
+No se sobrescriben experimentos anteriores.
+
+Ejecución
+---------
+Reiniciar el kernel y ejecutar todas las celdas en orden. La celda de fit
+realiza tres entrenamientos consecutivos, potencialmente de hasta 200 épocas
+cada uno, aunque EarlyStopping puede detenerlos antes. No se continúa desde
+checkpoints anteriores: se reinicia el protocolo completo para comparar.
+Las salidas heredadas se han limpiado. El usuario ejecutará los entrenamientos;
+no se han generado métricas experimentales al preparar el notebook.
+
+Referencias del protocolo de 100 épocas
+---------------------------------------
+                           Sin Dropout    Dropout 0.1    Dropout 0.2
+Accuracy validación        59,573 %       61,013 %       60,533 %
+Val_loss, mejor accuracy   1,291682       1,267663       1,238758
+Brecha inferencia          9,332 pp       13,529 pp      10,606 pp
+Mejor época                60             92             95
+Épocas ejecutadas          80             100            100
+
+Resultados de la ejecución
+--------------------------
+Fuente: metrics.json, history.json y comparison.json de las tres ejecuciones,
+además de las salidas del notebook. No se ha reentrenado durante este análisis.
+
+Métrica de mejor checkpoint     Sin Dropout     Dropout 0.1     Dropout 0.2
+Accuracy de validación          59,573 %        61,013 %        60,907 %
+Train accuracy, inferencia      68,905 %        74,542 %        71,993 %
+Brecha inferencia               9,332 pp        13,529 pp       11,087 pp
+Train loss, inferencia          0,931113        0,748591        0,812350
+Val_loss                       1,291682        1,267663        1,230804
+Mejor época                    60              92              107
+Épocas ejecutadas               80              112             127
+Ganancia accuracy tras 100      0,000 pp        0,000 pp        0,373 pp
+
+- Todas terminan por EarlyStopping, veinte épocas después del máximo de
+  accuracy, sin llegar al límite de 200.
+- Sin Dropout: 1.117 aciertos de 1.875; reproduce el resultado del control 09.
+- Dropout 0.1: 1.144 aciertos; reproduce el checkpoint de la época 92 del 08.
+- Dropout 0.2: 1.142 aciertos; siete aciertos adicionales tras la época 100,
+  +1,333 puntos respecto al control y solo dos aciertos menos que Dropout 0.1.
+- Se selecciona dropout_01 por mayor accuracy. Sus métricas finales por clase
+  son recall macro=54,137 %, precisión macro=56,636 %; Helipad sigue en 0 %.
+- Dropout 0.2 tiene menor pérdida y una brecha 2,442 puntos menor que 0.1.
+  No se han recalculado sus métricas macro por clase en este notebook, porque
+  las celdas finales evalúan el modelo seleccionado, no todos los candidatos.
+- Mínimos val_loss: control 1,288638 (época 49), Dropout 0.1 1,257164 (44),
+  Dropout 0.2 1,227393 (109). El checkpoint se elige por accuracy, no por loss.
+- Última época de Dropout 0.2: train accuracy durante fit=65,420 %,
+  val_accuracy=59,947 %, train loss=1,008963 y val_loss=1,231639.
+- LR usado por Dropout 0.2: 1e-3 en épocas 1-75; 2e-4 en 76-105; 4e-5 en
+  106-117; 8e-6 en 118-127. Su mejor checkpoint corresponde a LR=4e-5.
+
+Conclusiones y siguiente paso propuesto
+---------------------------------------
+El límite anterior afectaba ligeramente a Dropout 0.2, pero no a la selección
+por accuracy: 0.1 sigue primero. Aumentar más el máximo de épocas, manteniendo
+los mismos callbacks, no cambia una ejecución que ya termina por EarlyStopping.
+Ambas tasas mejoran al control bajo semilla 42, pero dos imágenes de diferencia
+no justifican afirmar que 0.1 sea superior en general. Dropout 0.2 también es
+un candidato válido por su menor entropía cruzada y brecha de inferencia.
+
+La prioridad es repetir las tres configuraciones con varias semillas compartidas
+(por ejemplo 1, 7 y 123, además de la 42 ya disponible), conservando datos,
+paciencias, LR y máximo 200. Comparar media, dispersión y diferencias emparejadas
+por semilla; no seleccionar únicamente la semilla con mejor resultado.
+Esto indicará si la mejora regularizada y la diferencia entre tasas son estables.
+Si se desea una prueba nueva después, estudiar Dropout solo en las dos primeras
+capas ocultas sería una modificación aislada; no es una mejora demostrada.
+No se ha creado otro experimento en esta revisión.
+
+Aviso de carga del optimizador y corrección
+------------------------------------------
+Se observó: Skipping variable loading for optimizer SGD ... 1 variables ... 9.
+En el checkpoint seleccionado se verificaron nueve variables del optimizador:
+un contador escalar de iteraciones y ocho acumuladores de momentum, uno por
+cada matriz de pesos y vector de sesgos de las cuatro capas Dense.
+El modelo recién construido y compilado tiene inicialmente el contador,
+pero no los ocho acumuladores, que se crean al construir/usar el optimizador.
+Keras omite restaurar esas variables cuando el número no coincide.
+Esto no indica que falten pesos de la red: el aviso se refiere al estado de SGD.
+No afecta a predict/evaluate, pero no permite asumir una reanudación idéntica
+del entrenamiento si se usa ese optimizador nuevo sin restaurar su estado.
+
+Se ha corregido la carga del modelo seleccionado al final de la celda de
+entrenamiento y en las celdas de validación/test: en lugar de reconstruir y
+cargar pesos sobre un SGD nuevo, se usa tf.keras.models.load_model(MODEL_PATH)
+para restaurar el archivo .keras completo, incluido SGD. Las líneas anteriores
+se conservan comentadas. No cambia los tres entrenamientos ni sus resultados;
+las salidas históricas, incluidos avisos antiguos, se conservan como evidencia.
+Para reanudar exactamente una ejecución también habría que gestionar el estado
+de callbacks, época, RNG y pipeline; cargar el modelo completo no cubre todo eso.
+
+Límites de interpretación
+------------------------
+Más épocas no garantizan mejora; priorizar validación y mantener el mejor
+checkpoint. Los callbacks pueden producir diferentes calendarios entre tasas;
+se estudia el protocolo común, no un número idéntico de actualizaciones finales.
+Semilla e inicialización compartidas no implican máscaras ni trayectorias
+idénticas entre tasas. Para verificar la reproducción del prefijo de 100 épocas
+se pueden contrastar los historiales con los de las pruebas 08/09 bajo el mismo
+entorno. Una semilla no estima variabilidad; repetir los finalistas con otras
+semillas antes de afirmar superioridad general. La selección repetida sobre
+la misma validación puede ajustarse a esa partición; el resultado de test no
+se conoce solo por generar prediction.json.

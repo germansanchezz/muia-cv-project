@@ -1,0 +1,17 @@
+{
+  "best_epoch": 107,
+  "epochs_run": 127,
+  "train_inference": {
+    "loss": 0.8123502731323242,
+    "accuracy": 0.7199336290359497
+  },
+  "validation_inference": {
+    "loss": 1.2308043241500854,
+    "accuracy": 0.6090666651725769
+  },
+  "accuracy_gap_pp": 11.08669638633728,
+  "best_val_accuracy_fit": 0.6090666651725769,
+  "best_val_accuracy_first_100": 0.6053333282470703,
+  "best_epoch_first_100": 95,
+  "gain_after_100_pp": 0.3733336925506592
+}
