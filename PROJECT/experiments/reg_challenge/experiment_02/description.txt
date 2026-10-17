@@ -1,0 +1,168 @@
+Experimento 02 — Penalización L2 más suave (1e-5)
+================================================
+
+Punto de partida y objetivo
+--------------------------
+Copia de reg_challenge_baseline.ipynb. Evaluar si una penalización L2 diez veces
+más suave que la del experimento 01 permite conservar más capacidad de ajuste
+y mejorar la validación.
+
+Motivación
+----------
+Las salidas guardadas del baseline muestran accuracy de validación 60,853 %,
+recall macro 53,368 % y precisión macro 55,068 %.
+El experimento 01, con L2=1e-4, obtuvo 59,200 %, 52,135 % y 53,786 %,
+respectivamente. La brecha entrenamiento-validación en las mejores épocas bajó
+de aproximadamente 8,897 a 7,810 puntos, pero también empeoró la validación.
+La hipótesis de este experimento es que una penalización menor puede ofrecer
+un mejor equilibrio. No es una mejora garantizada ni permite anticipar resultados.
+
+Cambio respecto al baseline
+--------------------------
+Solo se modifica la celda que define el modelo:
+- Importar l2 desde tensorflow.keras.regularizers.
+- Añadir kernel_regularizer=l2(1e-5) a las capas ocultas de 256, 128 y 64 neuronas.
+- Conservar las líneas sustituidas del baseline como comentarios.
+- Mantener sin penalización los sesgos y la capa de salida.
+
+Arquitectura:
+Input(32, 32, 3) → Flatten → Dense(256, ReLU, L2=1e-5) →
+Dense(128, ReLU, L2=1e-5) → Dense(64, ReLU, L2=1e-5) → Dense(13) → Softmax.
+El modelo conserva 828.685 parámetros.
+
+Respecto al experimento 01, el único cambio en la configuración de entrenamiento
+es el coeficiente L2: 1e-4 → 1e-5. No se reutilizan sus pesos: se construye y
+entrena un modelo nuevo desde cero.
+
+Configuración conservada
+-----------------------
+- Imágenes RGB de 32 × 32, float32, normalizadas a [0, 1] y precargadas.
+- Split: validación del 10 %, random_state=1 y shuffle=True.
+- Batch size: 8; máximo de 100 épocas; shuffle=True en fit.
+- SGD: learning_rate=1e-3, momentum=0.9, nesterov=True, clipnorm=1.0.
+- categorical_crossentropy y accuracy.
+- ModelCheckpoint: monitor val_accuracy y save_best_only=True.
+- ReduceLROnPlateau: monitor val_accuracy, factor=0.2, patience=5.
+- EarlyStopping: monitor val_accuracy, patience=10.
+- TerminateOnNaN.
+- Evaluación del mejor checkpoint y predicciones por lotes.
+- Sin cambios en carga de datos, formato JSON ni entrenamiento.
+- Rutas de resultados aisladas en experiment_02 mediante EXPERIMENT_DIR.
+- Sin Dropout, Batch Normalization, ruido gaussiano, aumentación, CNN ni
+  transfer learning: se estudia únicamente la penalización L2.
+
+Ejecución y archivos
+-------------------
+Ejecutar todas las celdas en orden, preferiblemente desde un kernel reiniciado.
+Las salidas heredadas del baseline se han limpiado para no confundirlas con
+resultados del experimento 02. El usuario ya ha completado su entrenamiento;
+las métricas siguientes se han extraído de las salidas guardadas.
+Rutas propias de este experimento:
+PROJECT/experiments/reg_challenge/experiment_02/model.keras
+PROJECT/experiments/reg_challenge/experiment_02/prediction.json
+EXPERIMENT_DIR define la carpeta y MODEL_PATH/PREDICTION_PATH se usan para
+guardar y cargar. No se sobrescriben los resultados del baseline ni del
+experimento 01.
+
+Resultados de la ejecución
+--------------------------
+Fuente: salidas guardadas de reg_experiment_02.ipynb. No se ha reentrenado
+para este análisis. Comparación con los resultados guardados de las otras
+configuraciones, no con repeticiones nuevas bajo semillas controladas.
+
+Métrica                           Baseline       Exp. 01 L2=1e-4   Exp. 02 L2=1e-5
+Accuracy de validación            60,853 %       59,200 %          59,947 %
+Recall macro                      53,368 %       52,135 %          52,368 %
+Precisión macro                   55,068 %       53,786 %          55,729 %
+Accuracy entrenamiento*           69,750 %       67,010 %          73,290 %
+Brecha train-validación*           8,897 puntos   7,810 puntos      13,343 puntos
+Mejor época por val_accuracy       58             59                60
+Épocas ejecutadas                  68             69                70
+Loss de entrenamiento*            0,8901         1,0535            0,8030
+Val_loss*                         1,3093         1,3778            1,3563
+LR usado en la mejor época         4e-5           4e-5              2e-4
+
+* En la mejor época de cada ejecución. Las pérdidas de los experimentos 01 y 02
+incluyen L2 y tienen coeficientes distintos; no equivalen a una comparación
+directa de entropía cruzada. La brecha usa métricas registradas durante fit,
+no una evaluación posterior del train con el checkpoint congelado.
+
+- Mejor checkpoint: época 60, val_accuracy=0.5994666814804077; la evaluación
+  posterior confirma accuracy=59,947 %, 1.124 aciertos de 1.875.
+- Frente al baseline: -0,907 puntos de accuracy, 17 aciertos menos;
+  -1,000 puntos de recall macro y +0,661 puntos de precisión macro.
+- Frente al experimento 01: +0,747 puntos de accuracy, 14 aciertos más;
+  +0,233 puntos de recall macro y +1,943 puntos de precisión macro.
+- EarlyStopping se activa en la época 70, diez después del mejor checkpoint.
+  Última época: train accuracy 74,690 %, val_accuracy 59,47 % (log redondeado),
+  loss 0,7669 y val_loss 1,3605. Las métricas evaluadas son del checkpoint 60.
+- ReduceLROnPlateau actúa al terminar las épocas 54, 65 y 70: LR pasa a 2e-4,
+  4e-5 y 8e-6. No se llega a entrenar una época con el último LR asignado.
+
+Observaciones
+-------------
+La penalización más suave recupera parte de la accuracy perdida con L2=1e-4,
+pero no supera al baseline en accuracy ni recall macro. Sí supera ligeramente
+su precisión macro; no hay una mejora uniforme de todos los indicadores.
+
+El modelo ajusta más el entrenamiento: train accuracy alcanza 73,29 % en su
+mejor época, mientras validación se queda en 59,95 %. La brecha crece hasta
+13,343 puntos, frente a 8,897 en el baseline y 7,810 en el experimento 01.
+En la época 70 el train sigue subiendo a 74,69 %, pero validación ronda 59,47 %.
+Este patrón es compatible con sobreajuste: mejorar el ajuste al entrenamiento
+no se está trasladando a una mejora equivalente sobre datos de validación.
+
+La reducción de L2 podría haber dejado una restricción demasiado débil, pero
+no es una causa demostrada. El calendario de LR también es diferente: el
+baseline baja por primera vez en la época 41 y el experimento 02 en la 54,
+manteniendo LR=1e-3 durante más tiempo. Los callbacks tienen la misma
+configuración, aunque reaccionan a historiales distintos. Se añade la
+variabilidad de inicialización y barajado sin semillas globales controladas.
+No hay evidencia de que la implementación de L2 esté fallando.
+
+Por clases, frente al baseline: el recall de Bus cae de 55,172 a 44,828 % y
+Dump truck de 60,169 a 52,542 %. Building sube de 75,758 a 78,237 % y Storage
+tank de 51,316 a 52,632 %. Helipad mantiene recall y precisión de 0 %.
+
+Conclusión y posible siguiente prueba
+------------------------------------
+Ninguna de las dos intensidades de L2 ha superado el baseline en accuracy de
+validación en estas ejecuciones. L2=1e-5 mejora frente a L2=1e-4, pero presenta
+una brecha mayor y no se adopta como nueva referencia.
+
+Una prueba siguiente razonable es partir del baseline sin L2 y añadir únicamente
+Dropout(0.2) después de cada una de las tres capas ocultas con ReLU. Mantener
+el resto de parámetros y usar archivos propios de experiment_03 permitirá
+estudiar esa técnica por separado, sin mezclar inicialmente L2 y Dropout.
+La tasa 0.2 es una hipótesis moderada de partida, no un valor óptimo demostrado.
+El experimento 03 no se ha creado ni ejecutado durante esta revisión.
+
+Criterios de interpretación
+--------------------------
+Comparar accuracy, métricas macro y brecha entrenamiento-validación; una brecha
+menor no basta si empeora la validación. La pérdida total incluye la penalización
+L2, por lo que no equivale a la entropía cruzada sin regularización. Tampoco
+comparte exactamente el mismo objetivo que L2=1e-4.
+Se conserva la ausencia de una semilla global de entrenamiento del baseline:
+una ejecución por configuración no separa con certeza el efecto del coeficiente
+de la variabilidad aleatoria de inicialización y barajado.
+
+Detalle de evaluación del mejor checkpoint
+-----------------------------------------
+Mean Accuracy: 59.947%
+Mean Recall: 52.368%
+Mean Precision: 55.729%
+> Cargo plane: Recall: 74.576% Precision: 88.000% Specificity: 99.670% Dice: 80.734%
+> Small car: Recall: 86.930% Precision: 72.040% Specificity: 92.820% Dice: 78.788%
+> Bus: Recall: 44.828% Precision: 45.087% Specificity: 94.415% Dice: 44.957%
+> Truck: Recall: 27.386% Precision: 39.521% Specificity: 93.819% Dice: 32.353%
+> Motorboat: Recall: 36.697% Precision: 50.633% Specificity: 97.792% Dice: 42.553%
+> Fishing vessel: Recall: 53.425% Precision: 61.905% Specificity: 98.668% Dice: 57.353%
+> Dump truck: Recall: 52.542% Precision: 55.357% Specificity: 97.154% Dice: 53.913%
+> Excavator: Recall: 58.025% Precision: 61.842% Specificity: 98.384% Dice: 59.873%
+> Building: Recall: 78.237% Precision: 64.692% Specificity: 89.749% Dice: 70.823%
+> Helipad: Recall: 0.000% Precision: 0.000% Specificity: 100.000% Dice: 0.000%
+> Storage tank: Recall: 52.632% Precision: 62.500% Specificity: 97.214% Dice: 57.143%
+> Shipping container: Recall: 59.259% Precision: 47.904% Specificity: 95.000% Dice: 52.980%
+> Pylon: Recall: 56.250% Precision: 75.000% Specificity: 99.674% Dice: 64.286%
+
