@@ -51,6 +51,7 @@ Red densa: \textbf{sin CNN ni transfer learning}. Técnicas: L2, Dropout, Batch 
 \begin{frame}{Primera exploración: técnicas aisladas}
 \small
 \setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.3}
+{\centering
 \begin{tabularx}{\textwidth}{@{}c X r@{}}
 \toprule
 \textbf{Exp.} & \textbf{Cambio} & \textbf{Acc. validación (\%)} \\
@@ -64,6 +65,7 @@ Red densa: \textbf{sin CNN ni transfer learning}. Técnicas: L2, Dropout, Batch 
 07 & Dropout 0.1 & 57,707 \\
 \bottomrule
 \end{tabularx}
+\par}
 \medskip
 \begin{itemize}
 \item \textbf{Dropout es la opción más prometedora} de esta exploración.
@@ -79,6 +81,7 @@ Red densa: \textbf{sin CNN ni transfer learning}. Técnicas: L2, Dropout, Batch 
 \end{itemize}
 \medskip
 \setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.3}
+{\centering
 \begin{tabular}{@{}l r r r@{}}
 \toprule
 & \textbf{Sin Dropout} & \textbf{Dropout 0.1} & \textbf{Dropout 0.2} \\
@@ -89,6 +92,7 @@ Brecha inferencia (pp) & 9,332 & 13,529 & 11,087 \\
 Mejor época / ejecutadas & 60 / 80 & 92 / 112 & 107 / 127 \\
 \bottomrule
 \end{tabular}
+\par}
 \medskip
 \begin{itemize}
 \item Dropout 0.1 gana \textbf{27 aciertos} al control (+1,440 pp).
@@ -128,6 +132,7 @@ Filas: clase real.\\Columnas: predicción.
 Dropout 0.1 + L2 $10^{-5}$ en las tres capas ocultas. Misma semilla, inicialización y protocolo del experimento 10.
 \end{block}
 \setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.25}
+{\centering
 \begin{tabular}{@{}l r r@{}}
 \toprule
 & \textbf{Dropout 0.1} & \textbf{Dropout + L2} \\
@@ -138,6 +143,7 @@ Precisión macro (\%) & \textbf{56,636} & 56,429 \\
 Entropía cruzada sin L2 & \textbf{1,2677} & 1,2692 \\
 \bottomrule
 \end{tabular}
+\par}
 \medskip
 \begin{itemize}
 \item Dos aciertos menos y brecha prácticamente igual: no mejora la validación de Dropout solo.
@@ -146,26 +152,31 @@ Entropía cruzada sin L2 & \textbf{1,2677} & 1,2692 \\
 \end{frame}
 
 
-\begin{frame}{Resultados externos: Codabench}
+\begin{frame}{Resultados externos: evolución en Codabench}
 \small
-\begin{block}{Evaluación de los tres archivos de predicciones enviados}
-Métricas de Codabench en porcentaje, redondeadas a dos decimales. Son resultados externos, distintos de la validación local.
+\begin{block}{Del challenge ffNN al de regularización}
+Resultados externos en porcentaje, redondeados a dos decimales; distintos de la validación local.
 \end{block}
-\renewcommand{\arraystretch}{1.5}\setlength{\tabcolsep}{7pt}
+\renewcommand{\arraystretch}{1.4}\setlength{\tabcolsep}{6pt}
+{\centering
 \begin{tabular}{@{}l r r r@{}}
 \toprule
 \textbf{Envío} & \textbf{Accuracy} & \textbf{Precisión} & \textbf{Recall} \\
 \midrule
-Baseline & 50,53 & 53,77 & 42,81 \\
+Challenge ffNN anterior & 47,91 & 44,84 & 41,15 \\
+\midrule
+Baseline de regularización & 50,53 & 53,77 & 42,81 \\
 Exp. 08: Dropout 0.1 & 52,22 & \textbf{56,54} & 46,74 \\
 \textbf{Exp. 11: Dropout + L2} & \textbf{52,39} & 56,39 & \textbf{47,21} \\
 \bottomrule
 \end{tabular}
+\par}
 \medskip
 \begin{itemize}
-\item \textbf{El experimento 11 es el publicado en la clasificación.}
-\item Mejor accuracy de los envíos: +1,86 puntos frente al baseline; +0,17 frente al 08.
+\item \textbf{Publicado: experimento 11}. Frente al challenge ffNN: \textbf{+4,48 pp} de accuracy, +11,55 de precisión y +6,06 de recall.
+\item Frente al baseline de esta fase: \textbf{+1,86 pp} de accuracy.
 \end{itemize}
+\footnotesize La evolución entre challenges incluye otros cambios del modelo y entrenamiento; no aísla el efecto de regularización.
 \end{frame}
 
 \begin{frame}{Conclusiones}

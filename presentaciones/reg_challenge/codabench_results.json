@@ -16,7 +16,13 @@
       "accuracy": 52.39,
       "precision": 56.39,
       "recall": 47.21
+    },
+    "previous_ffnn_challenge": {
+      "accuracy": 47.91,
+      "precision": 44.84,
+      "recall": 41.15
     }
   },
-  "precision_note": "Experimento 11 facilitado con dos decimales; se conserva esa precisión."
+  "precision_note": "Experimento 11 facilitado con dos decimales; se conserva esa precisión.",
+  "comparison_note": "La mejora entre fases no aísla el efecto de regularización: también hay cambios previos de arquitectura, preprocesamiento y protocolo."
 }
