@@ -1,0 +1,22 @@
+{
+  "source": "Resultados de Codabench facilitados por el usuario; porcentajes.",
+  "published_experiment": "experiment_11",
+  "results": {
+    "baseline": {
+      "accuracy": 50.52854122621564,
+      "precision": 53.77352315501953,
+      "recall": 42.8067020561419
+    },
+    "experiment_08": {
+      "accuracy": 52.21987315010571,
+      "precision": 56.544305810487685,
+      "recall": 46.74432163083215
+    },
+    "experiment_11": {
+      "accuracy": 52.39,
+      "precision": 56.39,
+      "recall": 47.21
+    }
+  },
+  "precision_note": "Experimento 11 facilitado con dos decimales; se conserva esa precisión."
+}
