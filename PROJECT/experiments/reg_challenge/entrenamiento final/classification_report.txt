@@ -1,0 +1,19 @@
+                    precision    recall  f1-score   support
+
+       Cargo plane     0.9200    0.7797    0.8440        59
+         Small car     0.7342    0.8480    0.7870       329
+               Bus     0.5482    0.5230    0.5353       174
+             Truck     0.3623    0.3112    0.3348       241
+         Motorboat     0.4944    0.4037    0.4444       109
+    Fishing vessel     0.6833    0.5616    0.6165        73
+        Dump truck     0.5081    0.5339    0.5207       118
+         Excavator     0.6133    0.5679    0.5897        81
+          Building     0.6880    0.7410    0.7135       363
+           Helipad     0.0000    0.0000    0.0000         9
+      Storage tank     0.6385    0.5461    0.5887       152
+Shipping container     0.5057    0.6593    0.5723       135
+             Pylon     0.6667    0.5625    0.6102        32
+
+          accuracy                         0.6101      1875
+         macro avg     0.5664    0.5414    0.5506      1875
+      weighted avg     0.6018    0.6101    0.6029      1875

@@ -1,0 +1,54 @@
+{
+  "Cargo plane": {
+    "average_precision": 0.8579606670183374,
+    "prevalence": 0.031466666666666664
+  },
+  "Small car": {
+    "average_precision": 0.8261704755560434,
+    "prevalence": 0.17546666666666666
+  },
+  "Bus": {
+    "average_precision": 0.5053358820978787,
+    "prevalence": 0.0928
+  },
+  "Truck": {
+    "average_precision": 0.31590521600195526,
+    "prevalence": 0.12853333333333333
+  },
+  "Motorboat": {
+    "average_precision": 0.4699736026558109,
+    "prevalence": 0.058133333333333335
+  },
+  "Fishing vessel": {
+    "average_precision": 0.6512459411487609,
+    "prevalence": 0.038933333333333334
+  },
+  "Dump truck": {
+    "average_precision": 0.5236098703565654,
+    "prevalence": 0.06293333333333333
+  },
+  "Excavator": {
+    "average_precision": 0.633324668439512,
+    "prevalence": 0.0432
+  },
+  "Building": {
+    "average_precision": 0.741943279252215,
+    "prevalence": 0.1936
+  },
+  "Helipad": {
+    "average_precision": 0.2140815706556631,
+    "prevalence": 0.0048
+  },
+  "Storage tank": {
+    "average_precision": 0.6479306434426838,
+    "prevalence": 0.08106666666666666
+  },
+  "Shipping container": {
+    "average_precision": 0.5871795896442511,
+    "prevalence": 0.072
+  },
+  "Pylon": {
+    "average_precision": 0.6955115254734793,
+    "prevalence": 0.017066666666666667
+  }
+}

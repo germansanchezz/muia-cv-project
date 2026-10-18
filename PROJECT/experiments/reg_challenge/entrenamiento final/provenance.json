@@ -1,0 +1,11 @@
+{
+  "source": "PROJECT/experiments/reg_challenge/experiment_10/dropout_01",
+  "selection": "Mayor accuracy de validación del estudio; Dropout 0.1",
+  "files": {
+    "model.keras": "71db979f37544df3412afcbe699576f9ad1e1b0e189095b73bb905d55e71c6d4",
+    "history.csv": "49d657462bb93e9f09d35b46f6a6d6155e5037d39cf429c999f961a70401c50b",
+    "history.json": "6efa1e1bc4f7d4593e5499b52838f059028f2ab09679e1b071d87516c57d9b0d",
+    "metrics.json": "d0fa27ab8af805fb410a3c253618c3ed48c15a0221970aafeabca0545868c11b",
+    "config.json": "8d8bb1fe87396759bc0703cbc3eea688c96b79085289c48fd6c4b7b6e8bb4ba6"
+  }
+}

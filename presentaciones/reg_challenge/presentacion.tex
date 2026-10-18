@@ -1,0 +1,200 @@
+\documentclass{beamer}
+\usetheme{Madrid}
+\usecolortheme{whale}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\setbeamertemplate{navigation symbols}{}
+\pdfstringdefDisableCommands{\def\\{ }}
+\title{The Regularization Challenge}
+\subtitle{Regularización de una red densa para reconocimiento de imágenes}
+\author[Gómez, Miralles y Sánchez]{Gómez Hernández, Marco \\
+Miralles Retuerto, Pablo \\ Sánchez Carmona, Germán}
+\institute[UPM]{Universidad Politécnica de Madrid\\
+Máster Universitario en Inteligencia Artificial\\Visión por Computador}
+\date{18 de octubre de 2026}
+% La presentación compila antes de ejecutar el notebook de gráficas.
+% Los paneles pendientes se sustituyen automáticamente al aparecer los PNG.
+\newcommand{\plotpanel}[3]{%
+  \IfFileExists{images/#1}{%
+    \includegraphics[width=\linewidth,height=#2,keepaspectratio]{#1}%
+  }{%
+    \begin{beamercolorbox}[sep=8pt,center,wd=\linewidth]{block body}
+      \parbox[c][#2][c]{0.90\linewidth}{\centering\small
+      \textbf{Gráfica pendiente de generar}\\[6pt]#3\\[6pt]
+      \scriptsize Ejecutar \texttt{graficas\_modelo\_final.ipynb}}
+    \end{beamercolorbox}%
+  }%
+}
+\begin{document}
+\begin{frame}\titlepage\end{frame}
+
+\begin{frame}{Objetivo y restricciones}
+\begin{block}{Objetivo}
+Mejorar la generalización del modelo del challenge anterior mediante regularización para reducir el sobreajuste.
+\end{block}
+\begin{itemize}
+\item Técnicas estudiadas: penalización L2, Dropout, Batch Normalization y data augmentation.
+\item Arquitectura clasificadora exclusivamente densa: \textbf{sin CNN ni transfer learning}.
+\item Comparar accuracy, entropía cruzada, métricas macro y brecha entre entrenamiento y validación.
+\end{itemize}
+\medskip
+\footnotesize Una brecha menor no basta: también debe valorarse el resultado de validación.
+\end{frame}
+
+\begin{frame}{Modelo y datos de partida}
+\small
+\begin{block}{Baseline de esta fase}
+Entrada $32\times32\times3$ $\rightarrow$ Flatten $\rightarrow$ Dense(256, ReLU) $\rightarrow$ Dense(128, ReLU) $\rightarrow$ Dense(64, ReLU) $\rightarrow$ Dense(13, Softmax).
+\end{block}
+\begin{itemize}
+\item Reducción por promedio, píxeles normalizados a $[0,1]$ y precarga en memoria.
+\item 13 clases; \textbf{16.871} imágenes de entrenamiento y \textbf{1.875} de validación. Reparto 90/10, \texttt{random\_state=1}.
+\item SGD: LR inicial $10^{-3}$, momentum $0.9$, Nesterov y \texttt{clipnorm=1}.
+\item Entropía cruzada categórica; batch 8; checkpoint por mayor \texttt{val\_accuracy}.
+\item Baseline histórico: accuracy \textbf{60,853\,\%}, recall macro 53,368\,\%, precisión macro 55,068\,\%.
+\end{itemize}
+\footnotesize Es la versión mejorada adaptada a esta fase; no es la entrada de $224\times224$ de los primeros experimentos ffNN.
+\end{frame}
+
+\begin{frame}{Primera exploración: técnicas aisladas}
+\scriptsize
+\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{@{}c X r r r@{}}
+\toprule
+\textbf{Exp.} & \textbf{Cambio} & \textbf{Acc. (\%)} & \textbf{Recall} & \textbf{Precisión} \\
+\midrule
+01 & L2 $10^{-4}$ en las tres capas ocultas & 59,200 & 52,135 & 53,786 \\
+02 & L2 más suave: $10^{-5}$ & 59,947 & 52,368 & 55,729 \\
+03 & Dropout 0.2 tras las tres capas ocultas & 60,160 & 53,134 & 56,264 \\
+04 & Dense $\to$ BN $\to$ ReLU; batch 8 & 55,680 & 51,671 & 50,081 \\
+05 & Misma red BN; batch 32 & 56,853 & 51,255 & 53,389 \\
+06 & Volteos horizontales y verticales antes de Flatten & 57,600 & 50,085 & 51,623 \\
+07 & Dropout 0.1 & 57,707 & 50,724 & 54,001 \\
+\bottomrule
+\end{tabularx}
+\medskip
+\begin{itemize}
+\item Máximo 100 épocas; paciencia LR 5 y EarlyStopping 10. Sin semilla global de entrenamiento fijada.
+\item Ninguna supera al baseline histórico; \textbf{Dropout 0.2 es la más prometedora} en esta exploración.
+\item Estas ejecuciones no aíslan totalmente técnica, inicialización y calendario adaptativo del LR.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Mejorar el protocolo antes de combinar técnicas}
+\small
+\begin{itemize}
+\item \textbf{Experimento 08:} semilla 42 y operaciones deterministas. Misma inicialización; comparar paciencias 5/10 frente a 10/20 con Dropout 0.1.
+\item Accuracy: \textbf{60,373\,\% $\to$ 61,013\,\%}, doce aciertos más. Coincidencia exacta de métricas hasta la primera divergencia del LR.
+\item \textbf{Experimentos 09--10:} comparar tasas 0 / 0.1 / 0.2 con semilla y protocolo común. Máximo de épocas 100 $\to$ 200.
+\item Evaluar train y validación \textbf{con el mismo checkpoint y en inferencia}: Dropout desactivado en ambos.
+\end{itemize}
+\begin{alertblock}{Lo que no mide la brecha de fit}
+\footnotesize Durante fit, train usa Dropout y pesos cambiantes; validación no. Su diferencia no equivale a evaluar ambos conjuntos con el modelo congelado.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Comparación controlada: máximo 200 épocas}
+\small
+\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l r r r@{}}
+\toprule
+& \textbf{Sin Dropout} & \textbf{Dropout 0.1} & \textbf{Dropout 0.2} \\
+\midrule
+Accuracy validación (\%) & 59,573 & \textbf{61,013} & 60,907 \\
+Entropía cruzada & 1,2917 & 1,2677 & \textbf{1,2308} \\
+Accuracy train (\%) & 68,905 & 74,542 & 71,993 \\
+Brecha inferencia (pp) & 9,332 & 13,529 & 11,087 \\
+Mejor época / ejecutadas & 60 / 80 & 92 / 112 & 107 / 127 \\
+\bottomrule
+\end{tabular}
+\medskip
+\begin{itemize}
+\item Dropout 0.1: \textbf{27 aciertos más} que el control (+1,440 pp).
+\item Dropout 0.2: \textbf{25 aciertos más} (+1,333 pp); gana siete al superar 100 épocas.
+\item Entre las tasas: \textbf{solo dos imágenes}. Una semilla no demuestra superioridad general.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Entrenamiento del modelo final: Dropout 0.1}
+\centering
+\plotpanel{training_curves.png}{4.8cm}{Accuracy y pérdida por época; checkpoint seleccionado en la época 92.}
+\par\smallskip
+\footnotesize Mejor época: \textbf{92}; parada: \textbf{112}. Las curvas de train se midieron con Dropout activo. La evaluación posterior sin Dropout alcanza 74,542\,\% en train y 61,013\,\% en validación.
+\end{frame}
+
+\begin{frame}{Generalización bajo condiciones comparables}
+\centering
+\plotpanel{controlled_comparison.png}{4.9cm}{Accuracy de train y validación en inferencia para tasas 0 / 0.1 / 0.2.}
+\par\smallskip
+\footnotesize Cada configuración se evalúa con su propio mejor checkpoint. Dropout mejora la validación del control, aunque la brecha no es menor: el control también ajusta menos el entrenamiento.
+\end{frame}
+
+\begin{frame}{Modelo final: matriz de confusión}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.72\textwidth}
+\plotpanel{confusion_matrix.png}{5.9cm}{Matriz normalizada por clase real.}
+\end{column}
+\begin{column}{0.26\textwidth}
+\scriptsize
+\begin{itemize}
+\item Small car: recall \textbf{84,80\,\%}.
+\item Cargo plane: recall \textbf{77,97\,\%}.
+\item Truck: recall \textbf{31,12\,\%}.
+\item Helipad: recall \textbf{0\,\%}.
+\end{itemize}
+\medskip
+Filas: clase real.\\Columnas: predicción.
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Modelo final: curvas precision--recall}
+\centering
+\plotpanel{precision_recall.png}{5.1cm}{Curvas por clase frente al resto y AP; se generan desde las probabilidades.}
+\par\smallskip
+\footnotesize AP resume cada curva y no equivale a la precisión del argmax. La prevalencia de referencia depende de la clase. Los valores de AP se incorporarán tras ejecutar el notebook.
+\end{frame}
+
+\begin{frame}{Última prueba: combinar Dropout y L2}
+\small
+\begin{block}{Experimento 11}
+Dropout 0.1 + L2 $10^{-5}$ en las tres capas ocultas. Misma semilla, inicialización y protocolo del experimento 10.
+\end{block}
+\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l r r@{}}
+\toprule
+& \textbf{Dropout 0.1} & \textbf{Dropout + L2} \\
+\midrule
+Accuracy (\%) & \textbf{61,013} & 60,907 \\
+Recall macro (\%) & \textbf{54,137} & 53,869 \\
+Precisión macro (\%) & \textbf{56,636} & 56,429 \\
+Entropía cruzada sin L2 & \textbf{1,2677} & 1,2692 \\
+\bottomrule
+\end{tabular}
+\medskip
+\begin{itemize}
+\item Dos aciertos menos y brecha prácticamente igual: no se adopta la combinación.
+\item La loss total incluye una penalización L2 de 0,009408; se compara la entropía cruzada por separado.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusiones y selección final}
+\small
+\begin{block}{Candidato seleccionado: Dropout 0.1, experimento 10}
+Accuracy \textbf{61,013\,\%}; recall macro \textbf{54,137\,\%}; precisión macro \textbf{56,636\,\%}. Modelo denso, 828.685 parámetros.
+\end{block}
+\begin{itemize}
+\item Mejora al control con semilla común en \textbf{1,440 puntos}. Dropout 0.2 es alternativa por su menor pérdida.
+\item BN, L2 y volteos no mejoraron las configuraciones de referencia en las pruebas realizadas. La combinación final tampoco aportó una mejora adicional.
+\item Persisten errores en clases minoritarias: Helipad no se resuelve con estas regularizaciones.
+\item Limitación: una partición y una semilla en las comparaciones controladas; repetir varias semillas sería el siguiente paso para comprobar robustez.
+\end{itemize}
+\footnotesize Se cierra la experimentación prevista. Las métricas son de validación: generar predicciones no proporciona una puntuación de test.
+\end{frame}
+\end{document}
