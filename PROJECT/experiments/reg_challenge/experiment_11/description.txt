@@ -1,0 +1,166 @@
+Experimento 11 — Combinación final: Dropout 0.1 + L2 1e-5
+=======================================================
+
+Objetivo y selección de técnicas
+-------------------------------
+Último experimento previsto: combinar dos regularizaciones ya estudiadas para
+comprobar si sus efectos se complementan. No se presupone una mejora.
+Dropout fue la técnica con evidencia más favorable bajo semilla compartida.
+Se elige tasa 0.1 por su mayor accuracy y métricas macro; tasa 0.2 ofrecía menor
+pérdida pero dos aciertos menos en el experimento 10.
+L2=1e-5 fue la mejor penalización de norma probada por accuracy (59,947 %),
+por delante de L2=1e-4, BN y volteos en las pruebas individuales. No mejoró por
+sí sola el baseline y su prueba anterior carecía del protocolo controlado
+actual: elegirla no implica afirmar que ya haya demostrado una mejora.
+Se evita añadir BN o aumentación, que empeoraron más los resultados observados,
+y no se mezclan tres técnicas sin evidencia adicional.
+
+Cambio y arquitectura
+---------------------
+Punto de comparación: experiment_10/dropout_01 (61,013 % validación).
+Se mantiene Dropout 0.1 después de las tres capas ocultas y se añade
+kernel_regularizer=l2(1e-5) a los pesos de esas mismas capas.
+Input(32,32,3) → Flatten → Dense(256, ReLU, L2) → Dropout(0.1) →
+Dense(128, ReLU, L2) → Dropout(0.1) → Dense(64, ReLU, L2) → Dropout(0.1) →
+Dense(13) → Softmax. 828.685 parámetros; sesgos y salida sin penalización.
+Un único entrenamiento desde cero, sin cargar pesos entrenados anteriores.
+
+Protocolo conservado
+-------------------
+Semilla 42 antes de construir la red; operaciones deterministas; batch 8;
+máximo 200 épocas. SGD: LR inicial 1e-3, momentum=0.9, nesterov=True,
+clipnorm=1.0. Categorical crossentropy y accuracy.
+ReduceLROnPlateau: val_accuracy, factor=0.2, patience=10; EarlyStopping:
+val_accuracy, patience=20; ModelCheckpoint por mejor val_accuracy,
+TerminateOnNaN y CSVLogger.
+RGB 32 × 32, float32, normalizado a [0,1] y precargado una vez; validación
+10 %, random_state=1 y shuffle=True. Sin BN, aumentación, CNN ni transfer learning.
+
+Evaluación y comparación
+-----------------------
+Se comprueba la configuración y huella inicial de experiment_10/dropout_01
+antes de usar sus métricas como referencia; no se reentrena ni sobrescribe.
+Se mantiene la evaluación posterior de train y validación con pesos fijos y
+Dropout desactivado, cargando el modelo completo mediante load_model.
+Se añade la métrica cross_entropy para registrar la entropía cruzada SIN L2.
+La loss total sí incluye L2, cuyo valor se guarda como regularization_loss.
+La comparación de pérdidas frente a Dropout solo utiliza cross_entropy, no
+la pérdida total penalizada. Esta métrica adicional no altera los gradientes.
+La huella de pesos iniciales debe coincidir con la referencia; L2 no cambia
+la forma ni la inicialización de los pesos. Si el entorno/configuración no
+coincide, se indica y no se presenta una comparación como controlada.
+
+Referencias guardadas
+---------------------
+Control sin Dropout: accuracy 59,573 %, val_loss 1,291682.
+Dropout 0.1: accuracy 61,013 %, val_loss 1,267663; recall macro 54,137 %,
+precisión macro 56,636 %, brecha de inferencia 13,529 pp.
+Dropout 0.2: accuracy 60,907 %, val_loss 1,230804, brecha 11,087 pp.
+Estas referencias pertenecen al protocolo de máximo 200 épocas y semilla 42.
+
+Archivos y ejecución
+-------------------
+Todos los resultados nuevos se guardan exclusivamente en experiment_11/:
+model.keras, prediction.json, history.csv, history.json, config.json,
+metrics.json y comparison.json. El test usa el mejor modelo combinado.
+Salidas heredadas limpiadas; código sustituido conservado como comentarios.
+Reiniciar el kernel y ejecutar todas las celdas en orden. Se ejecuta una sola
+prueba, hasta 200 épocas con parada anticipada. El usuario ya ha completado
+la ejecución; el análisis siguiente utiliza sus salidas guardadas, sin reentrenar.
+
+Resultados de la ejecución
+--------------------------
+Fuentes: metrics.json, config.json, comparison.json, history.json y evaluación
+por clase guardada en reg_experiment_11.ipynb. Revisión del 18/10/2026.
+
+Métrica del mejor checkpoint       Dropout 0.1 (exp. 10)    Dropout 0.1 + L2
+Accuracy validación                61,013 %                60,907 %
+Recall macro                       54,137 %                53,869 %
+Precisión macro                    56,636 %                56,429 %
+Train accuracy, inferencia         74,542 %                74,400 %
+Brecha en inferencia               13,529 pp               13,493 pp
+Train entropía cruzada sin L2      0,748591                0,757431
+Validación entropía cruzada sin L2  1,267663                1,269215
+Validación loss total              1,267663                1,278623
+Penalización L2 del checkpoint      0                       0,009408
+Mejor época                        92                       86
+Épocas ejecutadas                  112                      106
+
+- La configuración y la huella de inicialización coinciden con la referencia,
+  según comparison.json. Se mantiene semilla 42 y el mismo protocolo; solo se
+  añade L2 a los pesos ocultos, además de registrar cross_entropy como métrica.
+- Accuracy 60,9066665 %: 1.142 aciertos sobre 1.875, dos menos que Dropout 0.1
+  (1.144). Diferencia aproximada: -0,107 puntos porcentuales.
+- Recall macro: -0,268 puntos; precisión macro: -0,207 puntos.
+- La entropía cruzada de validación aumenta 0,001552 sin contar L2. La pérdida
+  total aumenta más porque incluye la penalización, aproximadamente 0,009408.
+- La brecha apenas cambia: -0,036 puntos. Train accuracy baja solo 0,142 puntos.
+  No hay una reducción apreciable del sobreajuste observada en estas métricas.
+- El control sin Dropout del protocolo de 200 épocas obtuvo 59,573 %:
+  la combinación lo supera 1,333 puntos (25 aciertos). Ese resultado no demuestra
+  una aportación adicional de L2, porque Dropout solo ya superaba al control.
+- El máximo de accuracy corresponde a la época 86; EarlyStopping detiene en
+  la 106, veinte épocas después. No se alcanza el límite de 200.
+- LR usado: 1e-3 en épocas 1-62, 2e-4 en 63-79, 4e-5 en 80-96 y 8e-6 en
+  97-106. El mejor checkpoint utiliza LR=4e-5.
+- La mínima pérdida total de validación es 1,262435 en la época 44, con entropía
+  cruzada 1,253708 y accuracy 59,200 %. No es el checkpoint elegido por accuracy.
+- Última época: train accuracy durante fit 68,781 %, val_accuracy 60,427 %,
+  train loss 0,924621, val_loss 1,278159 y val_cross_entropy 1,268732.
+
+Resultados por clase e interpretación
+-------------------------------------
+La combinación no mejora todas las clases. Frente a Dropout 0.1, recall de
+Truck sube 31,120 → 31,950 %, Dump truck 53,390 → 55,932 % y Building
+74,105 → 75,758 %. Bus baja 52,299 → 50,000 %, Motorboat 40,367 → 37,615 %
+y Shipping container 65,926 → 62,963 %. Helipad sigue con recall y precisión 0 %.
+
+La intensidad L2=1e-5 sí se aplica: hay una penalización positiva, separada de
+la entropía cruzada. Sin embargo, no aporta una mejora adicional de accuracy,
+recall macro, precisión macro o entropía cruzada frente a Dropout 0.1 solo.
+La diferencia de dos aciertos es pequeña y una sola semilla no permite afirmar
+superioridad general, pero no existe evidencia para adoptar la combinación.
+No se interpreta como un error de construcción ni se concluye que toda
+combinación de L2 y Dropout vaya a fallar.
+
+Conclusión final del estudio
+---------------------------
+Se mantiene como candidato final por accuracy y métricas macro el checkpoint
+experiment_10/dropout_01/model.keras: 61,013 % de accuracy, recall macro
+54,137 % y precisión macro 56,636 %. El modelo copiado a experiment_10/model.keras
+corresponde a esa misma selección.
+Dropout 0.2 del experimento 10 sigue siendo alternativa por menor entropía
+cruzada (1,230804) y menor brecha (11,087 pp), con 60,907 % de accuracy.
+La combinación final queda documentada como prueba sin mejora adicional.
+No se crean ni planifican más experimentos en esta entrega; las opciones de
+robustez con varias semillas quedan como trabajo futuro opcional.
+
+Interpretación
+--------------
+La hipótesis es que L2 suave limite pesos grandes mientras Dropout dificulta
+la dependencia entre activaciones. Podrían complementarse o restringir en
+exceso el aprendizaje; los resultados de esta ejecución no muestran una mejora adicional. Priorizar
+validación y métricas por clase, no solo una brecha menor. El monitor adaptativo
+puede producir otro calendario de LR. Una sola semilla y la selección repetida
+sobre validación no garantizan superioridad general. No se planifican más
+experimentos como parte de esta última prueba.
+
+Detalle de evaluación del mejor checkpoint
+-----------------------------------------
+Mean Accuracy: 60.907%
+Mean Recall: 53.869%
+Mean Precision: 56.429%
+> Cargo plane: Recall: 79.661% Precision: 94.000% Specificity: 99.835% Dice: 86.239%
+> Small car: Recall: 84.498% Precision: 74.933% Specificity: 93.984% Dice: 79.429%
+> Bus: Recall: 50.000% Precision: 53.374% Specificity: 95.532% Dice: 51.632%
+> Truck: Recall: 31.950% Precision: 38.693% Specificity: 92.534% Dice: 35.000%
+> Motorboat: Recall: 37.615% Precision: 49.398% Specificity: 97.622% Dice: 42.708%
+> Fishing vessel: Recall: 56.164% Precision: 66.129% Specificity: 98.835% Dice: 60.741%
+> Dump truck: Recall: 55.932% Precision: 50.382% Specificity: 96.301% Dice: 53.012%
+> Excavator: Recall: 55.556% Precision: 61.644% Specificity: 98.439% Dice: 58.442%
+> Building: Recall: 75.758% Precision: 66.586% Specificity: 90.873% Dice: 70.876%
+> Helipad: Recall: 0.000% Precision: 0.000% Specificity: 100.000% Dice: 0.000%
+> Storage tank: Recall: 53.947% Precision: 66.667% Specificity: 97.620% Dice: 59.636%
+> Shipping container: Recall: 62.963% Precision: 47.486% Specificity: 94.598% Dice: 54.140%
+> Pylon: Recall: 56.250% Precision: 64.286% Specificity: 99.457% Dice: 60.000%
+

@@ -1,0 +1,39 @@
+{
+  "reference_status": "protocolo e inicializaci\u00f3n compatibles; \u00fanica regularizaci\u00f3n a\u00f1adida: L2",
+  "reference_dropout_01": {
+    "best_epoch": 92,
+    "epochs_run": 112,
+    "train_inference": {
+      "loss": 0.748591423034668,
+      "accuracy": 0.7454211115837097
+    },
+    "validation_inference": {
+      "loss": 1.2676631212234497,
+      "accuracy": 0.6101333498954773
+    },
+    "accuracy_gap_pp": 13.528776168823242,
+    "best_val_accuracy_fit": 0.6101333498954773,
+    "best_val_accuracy_first_100": 0.6101333498954773,
+    "best_epoch_first_100": 92,
+    "gain_after_100_pp": 0.0
+  },
+  "experiment_11": {
+    "best_epoch": 86,
+    "epochs_run": 106,
+    "train_inference": {
+      "loss": 0.7668391466140747,
+      "accuracy": 0.7439985871315002,
+      "cross_entropy": 0.7574309706687927
+    },
+    "validation_inference": {
+      "loss": 1.278623342514038,
+      "accuracy": 0.6090666651725769,
+      "cross_entropy": 1.2692147493362427
+    },
+    "accuracy_gap_pp": 13.493192195892334,
+    "best_val_accuracy_fit": 0.6090666651725769,
+    "regularization_loss": 0.00940844789147377
+  },
+  "validation_accuracy_delta_pp": -0.10666847229003906,
+  "validation_cross_entropy_delta": 0.0015516281127929688
+}
