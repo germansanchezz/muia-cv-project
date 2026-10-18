@@ -1,6 +1,6 @@
 # Resumen de reg_challenge
 
-Resultados guardados revisados el **17/10/2026**. No se han ejecutado nuevos entrenamientos para este resumen.
+Resultados guardados revisados el **18/10/2026**. No se han ejecutado nuevos entrenamientos para este resumen.
 
 ## Configuración de partida
 
@@ -29,23 +29,33 @@ Cada fila usa el **mejor checkpoint por accuracy de validación**, no necesariam
 | [10 · control](experiment_10/reg_experiment_10.ipynb) | Sin Dropout efectivo; máximo **200**, resto igual al 09. | 59,573 | — | — | 1,292 | 60 / 80 |
 | [10 · Dropout 0.1](experiment_10/reg_experiment_10.ipynb) | Dropout 0.1; máximo **200**, resto igual al 08 propuesta. | 61,013 | 54,137 | 56,636 | 1,268 | 92 / 112 |
 | [10 · Dropout 0.2](experiment_10/reg_experiment_10.ipynb) | Dropout 0.2; máximo **200**, resto igual al 09 propuesta. | 60,907 | — | — | 1,231 | 107 / 127 |
+| [11](experiment_11/reg_experiment_11.ipynb) | Combinación final: Dropout `0.1` + L2 `1e-5`; semilla 42, paciencias 10/20, máximo 200. | 60,907 | 53,869 | 56,429 | 1,279¹ | 86 / 106 |
 
-¹ En 01 y 02 la pérdida incluye L2; no es directamente equivalente a la entropía cruzada de las otras configuraciones. **—**: métrica por clase no guardada para esa ejecución; no se ha sustituido por la de otro checkpoint. En el 10 las métricas por clase guardadas corresponden al modelo seleccionado, Dropout 0.1.
+¹ En 01, 02 y 11 la pérdida incluye L2; no es directamente equivalente a la entropía cruzada de las otras configuraciones. **—**: métrica por clase no guardada para esa ejecución; no se ha sustituido por la de otro checkpoint. En el 10 las métricas por clase guardadas corresponden al modelo seleccionado, Dropout 0.1. En el 11, la entropía cruzada de validación **sin L2 es 1,269215** y la penalización **0,009408**; su pérdida total es **1,278623**.
 
 ## Conclusiones breves
 
 - **L2, BN y volteos no superaron al baseline histórico** en sus primeras ejecuciones. Sin semillas compartidas, esas diferencias no aíslan completamente el efecto de la técnica.
 - Con semilla y protocolo común, **Dropout 0.1 y 0.2 mejoran al control sin Dropout**: 61,013 % y 60,907 % frente a 59,573 %. La diferencia entre las dos tasas es de **solo dos imágenes**; 0.2 tiene menor pérdida y menor brecha que 0.1.
 - Ampliar el máximo de 100 a 200 épocas aporta **siete aciertos** a Dropout 0.2 (+0,373 puntos), ninguno a las otras configuraciones. Todas terminan por EarlyStopping antes de 200: aumentar más el límite sin cambiar el protocolo no aportaría entrenamiento adicional.
+- **La combinación final Dropout 0.1 + L2 1e-5 no mejora Dropout solo:** 60,907 % frente a 61,013 % (dos aciertos menos), con métricas macro ligeramente inferiores y brecha prácticamente igual.
 - **Helipad sigue con recall 0 %** en las evaluaciones por clase guardadas. La regularización no ha resuelto ese problema. Los resultados de test no se conocen únicamente por generar `prediction.json`.
 
 En el experimento 10, la brecha train-validación **evaluada con Dropout desactivado** es 9,332 puntos sin Dropout, 13,529 con 0.1 y 11,087 con 0.2. Una brecha menor no equivale automáticamente a mejor validación. Las brechas de `fit` de pruebas anteriores no son directamente comparables cuando entrenamiento y validación usan modos diferentes.
 
-## Posibles próximos experimentos
+## Trabajo futuro opcional (sin más pruebas previstas)
 
 1. **Prioridad: varias semillas compartidas.** Repetir tasas 0 / 0.1 / 0.2 con semillas como 1, 7 y 123, conservando el protocolo del 10. Comparar medias, dispersión y diferencias por semilla; no elegir simplemente la mejor ejecución.
 2. **Ubicación de Dropout.** Aplicarlo solo tras las capas de 256 y 128, dejando libre la de 64. Mantener tasa, semilla y entrenamiento; comprobar si mejora el equilibrio frente a aplicarlo en los tres bloques.
-3. **Combinación moderada.** Si Dropout confirma su mejora, probar añadir L2 suave (`1e-5`) a esa configuración, cambiando únicamente ese factor. Las pruebas iniciales de L2 no usaban el protocolo controlado actual; la combinación no tiene una mejora garantizada.
+3. **Combinaciones.** Dropout 0.1 + L2 `1e-5` ya se evaluó en el 11, sin mejora adicional. Otras combinaciones quedarían para un estudio posterior, sin garantía de beneficio.
 4. **Diagnóstico de clases minoritarias.** Revisar errores y ejemplos de Helipad antes de introducir más técnicas. Si se prueban pesos de clase, confirmar que encajan en la entrega y estudiarlos como un cambio separado.
 
 La primera opción aporta la evidencia más útil antes de otra búsqueda de hiperparámetros. Mantener siempre configuración, historial, checkpoint y resultados en carpetas propias; evitar ajustar indefinidamente sobre la misma validación.
+
+## Cierre del estudio
+
+La última prueba, [experimento 11](experiment_11/reg_experiment_11.ipynb), está completada: Dropout 0.1 + L2 `1e-5` obtuvo **60,907 %**, sin superar a Dropout solo. [Descripción y resultados](experiment_11/description.txt).
+
+**Candidato final por accuracy y métricas macro:** [Dropout 0.1 del experimento 10](experiment_10/dropout_01/model.keras), también copiado en [experiment_10/model.keras](experiment_10/model.keras): **61,013 %**, recall macro **54,137 %**, precisión macro **56,636 %**. Frente al control con semilla compartida mejora **1,440 puntos**; frente al baseline histórico sin esa semilla, la diferencia es solo **0,160 puntos** y no constituye una comparación controlada.
+
+Dropout 0.2 del experimento 10 ofrece menor pérdida de validación y menor brecha, con dos aciertos menos. La combinación no justifica sustituir ninguno de esos candidatos. Se cierra la experimentación prevista; las propuestas anteriores son trabajo futuro opcional. Los resultados proceden de una única partición y, en las comparaciones controladas, una única semilla: no demuestran superioridad general ni una puntuación de test.
