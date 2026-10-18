@@ -149,15 +149,15 @@ Entropía cruzada sin L2 & \textbf{1,2677} & 1,2692 \\
 \medskip
 \begin{itemize}
 \item Dos aciertos menos y brecha prácticamente igual: no mejora la validación de Dropout solo.
-\item Se envía a Codabench como combinación final; su resultado externo se muestra a continuación.
+\item Se envía a Codabench como combinación final.
 \end{itemize}
 \end{frame}
 
 
-\begin{frame}{Resultados externos: evolución en Codabench}
+\begin{frame}{Resultados y evolución en Codabench}
 \small
 \begin{block}{Del challenge ffNN al de regularización}
-Resultados externos en porcentaje, redondeados a dos decimales; distintos de la validación local.
+Resultados en porcentaje, redondeados a dos decimales; distintos de la validación local.
 \end{block}
 \renewcommand{\arraystretch}{1.4}\setlength{\tabcolsep}{6pt}
 {\centering
@@ -188,7 +188,7 @@ Codabench: accuracy \textbf{52,39\,\%}, precisión \textbf{56,39\,\%} y recall \
 \end{block}
 \begin{itemize}
 \item \textbf{Dropout fue la regularización más útil} en las comparaciones controladas.
-\item La combinación no mejora la validación local, pero obtiene la \textbf{mayor accuracy externa de los tres envíos}.
+\item La combinación no mejora la validación local, pero obtiene la \textbf{mayor accuracy de los tres envíos}.
 \item Mejor validación local: Dropout 0.1, \textbf{61,013\,\%}. Las gráficas anteriores corresponden a este modelo, no al envío 11.
 \item Persisten limitaciones: Helipad tiene recall 0\,\% en validación; una partición y una semilla no bastan para demostrar superioridad general.
 \end{itemize}
