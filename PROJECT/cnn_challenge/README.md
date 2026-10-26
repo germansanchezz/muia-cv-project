@@ -5,6 +5,10 @@ y arquitecturas populares para clasificar las 13 categorías de xView. Se entren
 **una red por ejecución, siempre desde cero**, y se guardan los resultados para
 compararlos más tarde sin volver a entrenar.
 
+Las [seis referencias de Round 1](popular_architectures/round1/README.md) ya están
+preparadas en carpetas independientes, con Adam, entrada 64×64 y comparaciones
+desactivadas. Puedes ejecutar esos notebooks completos sin modificar sus rutas.
+
 ## 1. Entorno y datos
 
 Dependencias: Python, TensorFlow/Keras, NumPy, scikit-learn, Rasterio, Matplotlib
@@ -71,7 +75,7 @@ editable, no un modelo optimizado.
 | `filters`, `convs_per_block`, `kernel_size`, `batch_norm`, `l2` | Arquitectura y regularización de la CNN propia |
 | `mobilenet_alpha` | Anchura de MobileNet y MobileNetV2 |
 
-El catálogo sigue el tema [1.CNN-Architectures.pdf](1.CNN-Architectures.pdf):
+El catálogo sigue el tema `1.CNN-Architectures.pdf`:
 
 | Familia | Valores de `CFG['architecture']` |
 |---|---|
