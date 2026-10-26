@@ -1,0 +1,76 @@
+{
+  "experiment_id": "cnn_001",
+  "hypothesis": "[completar: cambio y mejora esperada]",
+  "architecture": "custom",
+  "seed": 42,
+  "deterministic": true,
+  "image_size": [
+    64,
+    64
+  ],
+  "batch_size": 32,
+  "max_epochs": 200,
+  "optimizer": "sgd",
+  "learning_rate": 0.001,
+  "momentum": 0.9,
+  "clipnorm": 1.0,
+  "filters": [
+    32,
+    64,
+    128
+  ],
+  "convs_per_block": 2,
+  "kernel_size": 3,
+  "mobilenet_alpha": 1.0,
+  "batch_norm": false,
+  "dropout": 0.1,
+  "l2": 0.0,
+  "augmentation": false,
+  "flip": "horizontal_and_vertical",
+  "rotation": 0.0,
+  "lr_factor": 0.2,
+  "lr_patience": 10,
+  "stop_patience": 20,
+  "min_lr": 1e-07,
+  "monitor": "val_accuracy",
+  "monitor_mode": "max",
+  "weights": null,
+  "all_layers_trainable": true,
+  "head": "GAP-Dropout-Dense13",
+  "class_names": [
+    "Cargo plane",
+    "Small car",
+    "Bus",
+    "Truck",
+    "Motorboat",
+    "Fishing vessel",
+    "Dump truck",
+    "Excavator",
+    "Building",
+    "Helipad",
+    "Storage tank",
+    "Shipping container",
+    "Pylon"
+  ],
+  "split_hash": "f7d0f1df9d98579704f95b599e9c0783142c3b9f0939957bfd3af74519275fd9",
+  "data_hash": "e2f0a110afa4f20ecc81191b384f1490bb02b47fd92a4a9fb6589478e6a32eea",
+  "split_spec": {
+    "validation_fraction": 0.1,
+    "random_state": 1,
+    "shuffle": true,
+    "stratify": null
+  },
+  "preprocessing": "rasterio-average-float32-rgb-div255-v1",
+  "data_load_seconds": 37.874206608999884,
+  "initial_weights_sha256": "c6768ab8d3d63ee6bf0e9e005b92829c3f4ea5b676e9dbc9e9a07ed9fff965c9",
+  "environment": {
+    "python": "3.10.21",
+    "tensorflow": "2.15.1",
+    "numpy": "1.26.4",
+    "rasterio": "1.4.4",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+    "gpu": [
+      "NVIDIA GeForce RTX 4070 Ti"
+    ]
+  }
+}

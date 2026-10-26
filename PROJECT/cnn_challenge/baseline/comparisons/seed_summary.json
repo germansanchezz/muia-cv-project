@@ -1,0 +1,17 @@
+[
+  {
+    "runs": [
+      "."
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7013333333333334,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.6841460578419819,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.7017132958737992,
+    "f1_macro_std": null
+  }
+]
