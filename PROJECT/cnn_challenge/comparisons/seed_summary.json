@@ -1,0 +1,92 @@
+[
+  {
+    "runs": [
+      "popular_architectures/round1/01_vgg16-b"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7237333333333333,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7289314464235616,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.7442992720055177,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/round1/02_googlenet"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.6512,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.6244272085103167,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.6332707587669215,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/round1/03_resnet18"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7189333333333333,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7252484773921565,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.7317835280362254,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/round1/04_densenet121"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7434666666666667,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7489243058108167,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.7531169985309536,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/round1/05_mobilenet_v2"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7013333333333334,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7026865591928391,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.7099572330870275,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/round1/06_efficientnet_b0"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.6746666666666666,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.6622106484052289,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.6763214214758091,
+    "f1_macro_std": null
+  }
+]
