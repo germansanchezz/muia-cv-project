@@ -1,0 +1,20 @@
+Model: "densenet121_scratch"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ rgb_0_1 (InputLayer)        [(None, 64, 64, 3)]       0         
+                                                                 
+ densenet121 (Functional)    (None, 2, 2, 1024)        7037504   
+                                                                 
+ global_average_pooling2d (  (None, 1024)              0         
+ GlobalAveragePooling2D)                                         
+                                                                 
+ dropout (Dropout)           (None, 1024)              0         
+                                                                 
+ classification (Dense)      (None, 13)                13325     
+                                                                 
+=================================================================
+Total params: 7050829 (26.90 MB)
+Trainable params: 6967181 (26.58 MB)
+Non-trainable params: 83648 (326.75 KB)
+_________________________________________________________________
