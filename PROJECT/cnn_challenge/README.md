@@ -8,6 +8,10 @@ compararlos más tarde sin volver a entrenar.
 Las [seis referencias de Round 1](popular_architectures/round1/README.md) ya están
 preparadas en carpetas independientes, con Adam, entrada 64×64 y comparaciones
 desactivadas. Puedes ejecutar esos notebooks completos sin modificar sus rutas.
+Dentro de esa ronda, los ajustes menores se conservan como variantes `-a`, `-b`,
+etc.: VGG16-a guarda la ejecución original y VGG16-b prueba un LR inicial menor.
+Las versiones superiores de las arquitecturas o un cambio general de resolución
+se reservarán para Round 2.
 
 ## 1. Entorno y datos
 

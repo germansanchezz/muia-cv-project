@@ -1,0 +1,20 @@
+Model: "vgg16_scratch"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ rgb_0_1 (InputLayer)        [(None, 64, 64, 3)]       0         
+                                                                 
+ vgg16 (Functional)          (None, 2, 2, 512)         14714688  
+                                                                 
+ global_average_pooling2d (  (None, 512)               0         
+ GlobalAveragePooling2D)                                         
+                                                                 
+ dropout (Dropout)           (None, 512)               0         
+                                                                 
+ classification (Dense)      (None, 13)                6669      
+                                                                 
+=================================================================
+Total params: 14721357 (56.16 MB)
+Trainable params: 14721357 (56.16 MB)
+Non-trainable params: 0 (0.00 Byte)
+_________________________________________________________________

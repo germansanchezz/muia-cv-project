@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "best_epoch": 2,
+  "epochs_run": 22,
+  "accuracy": 0.1936,
+  "precision_macro": 0.014892307692307693,
+  "recall_macro": 0.07692307692307693,
+  "f1_macro": 0.024953598680140236,
+  "f1_weighted": 0.06280321715817694,
+  "ap_macro": 0.07971006460966133,
+  "train_inference": {
+    "loss": 2.3224899768829346,
+    "accuracy": 0.1915120631456375,
+    "ce": 2.3224899768829346
+  },
+  "valid_inference": {
+    "loss": 2.314405679702759,
+    "accuracy": 0.19359999895095825,
+    "ce": 2.314405679702759
+  },
+  "accuracy_gap_pp": -0.20879358053207397,
+  "params": 14721357,
+  "fit_seconds": 298.1596517550006,
+  "predict_seconds": 0.4259421389997442,
+  "predict_ms_per_image": 0.22716914079986358,
+  "class_metrics": [
+    {
+      "class": "Cargo plane",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.03151377908036849,
+      "support": 59
+    },
+    {
+      "class": "Small car",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.1806996340230956,
+      "support": 329
+    },
+    {
+      "class": "Bus",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.09445045049924684,
+      "support": 174
+    },
+    {
+      "class": "Truck",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.12686679815535468,
+      "support": 241
+    },
+    {
+      "class": "Motorboat",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.06094247082557119,
+      "support": 109
+    },
+    {
+      "class": "Fishing vessel",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.02950686045432416,
+      "support": 73
+    },
+    {
+      "class": "Dump truck",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.057764926667739414,
+      "support": 118
+    },
+    {
+      "class": "Excavator",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.04671457870565857,
+      "support": 81
+    },
+    {
+      "class": "Building",
+      "precision": 0.1936,
+      "recall": 1.0,
+      "f1_dice": 0.32439678284182305,
+      "specificity": 0.0,
+      "average_precision": 0.20102718421049903,
+      "support": 363
+    },
+    {
+      "class": "Helipad",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.017457696351159232,
+      "support": 9
+    },
+    {
+      "class": "Storage tank",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.08567753647567906,
+      "support": 152
+    },
+    {
+      "class": "Shipping container",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.0766361162933787,
+      "support": 135
+    },
+    {
+      "class": "Pylon",
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_dice": 0.0,
+      "specificity": 1.0,
+      "average_precision": 0.026972808183522268,
+      "support": 32
+    }
+  ]
+}

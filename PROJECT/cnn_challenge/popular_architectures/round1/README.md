@@ -1,14 +1,15 @@
 # Round 1 · referencias con arquitecturas populares
 
-Seis experimentos iniciales con el mismo protocolo, para comparar después con
-las CNN propias. Cada notebook entrena una red desde cero y se puede ejecutar
-completo, en cualquier orden. Los entrenamientos quedan pendientes de ejecución.
+Seis arquitecturas populares como referencias para las futuras CNN propias.
+Cada notebook entrena una red desde cero y puede ejecutarse completo.
+Los ajustes menores se guardan como variantes dentro de esta misma ronda.
 
 ## Notebooks
 
 | Experimento | Notebook | Referencia |
 |---|---|---|
-| 01 | [VGG16](01_vgg16/vgg16_round1.ipynb) | Convoluciones apiladas; cabeza GAP adaptada |
+| 01-a | [VGG16 · variante a](01_vgg16-a/vgg16_round1_a.ipynb) | LR 1e-3; ejecución original conservada, estancada en 19,36 % |
+| 01-b | [VGG16 · variante b](01_vgg16-b/vgg16_round1_b.ipynb) | LR 1e-4; pendiente de entrenar, resto igual a la variante a |
 | 02 | [GoogLeNet](02_googlenet/googlenet_round1.ipynb) | Inception-v1; sin cabezas auxiliares |
 | 03 | [ResNet18](03_resnet18/resnet18_round1.ipynb) | Conexiones residuales |
 | 04 | [DenseNet121](04_densenet121/densenet121_round1.ipynb) | Conexiones densas |
@@ -37,10 +38,27 @@ Las adaptaciones están descritas en el apartado 4 de los notebooks y en el
 | Normalización del modelo | La propia de cada arquitectura |
 | Caché | Compartida en `cnn_challenge/.cache/`, modo `mmap` |
 
-Es una primera comparación con configuración común. Si una arquitectura no
-converge, se revisarán sus curvas antes de interpretar su resultado como una
-limitación del modelo. Los ajustes posteriores pueden guardarse en `round2/`
-para conservar esta ronda.
+Este es el protocolo inicial. La variante VGG16-b cambia únicamente el LR inicial
+a **0.0001**; mantiene semilla, arquitectura, resolución, batch, regularización y
+callbacks. Si una arquitectura no converge, se revisarán sus curvas antes de
+interpretar su resultado como una limitación del modelo.
+
+## Variantes dentro de la ronda
+
+Los ajustes menores de entrenamiento (LR, callbacks o regularización) permanecen
+en `round1/`, con sufijos `-a`, `-b`, etc. Cada variante conserva sus propios
+resultados y documenta qué cambia. `round2/` se reserva para versiones superiores
+de las arquitecturas o un cambio general de resolución.
+
+La primera VGG16 se ha movido de `01_vgg16/` a `01_vgg16-a/`, conservando el modelo,
+las predicciones, los artefactos, las figuras y las salidas del notebook. Su mejor
+checkpoint es el de la época 2; terminó en la 22 y predice Building para todas las
+imágenes de validación. Su accuracy es **19,36 %**. Se conserva como intento
+fallido, no como referencia definitiva de rendimiento.
+
+El identificador histórico `round1_01_vgg16` se mantiene en la variante a y sus
+artefactos. La variante b usa `round1_01_vgg16-b`, arranca con pesos aleatorios y
+no contiene resultados heredados de a.
 
 ## Ejecutar y conservar resultados
 
@@ -54,25 +72,10 @@ experimentos. Reejecutar un entrenamiento en la misma carpeta sobrescribe sus
 resultados. Para repetir con otra semilla o configuración conservando esta prueba,
 crea otra copia y actualiza `NOTEBOOK_PATH` e `experiment_id`.
 
-## Comparar cuando terminen las seis redes
+## Comparaciones pendientes
 
-Las comparaciones están **desactivadas en los seis notebooks**: las dos llamadas
-finales del apartado 9 están comentadas. «Ejecutar todo» no intenta leer otros
-experimentos ni modifica las comparaciones existentes.
-
-En cualquiera de las seis copias, `SELECT_RUNS` ya contiene las carpetas de toda
-la ronda. Cuando todas tengan resultados:
-
-1. Si has reiniciado el kernel, ejecuta la primera celda de código.
-2. En el apartado 9, descomenta las dos llamadas finales:
-
-   ```python
-   runs = load_runs(CHALLENGE_DIR, SELECT_RUNS)
-   compare_runs(runs, CHALLENGE_DIR / 'comparisons')
-   ```
-
-3. Ejecuta solo esa celda. Los resultados se guardan en
-   `PROJECT/cnn_challenge/comparisons/`.
-
-Puedes cambiar `SELECT_RUNS` para comparar un subconjunto o incorporar una CNN
-propia. No hace falta ejecutar los otros apartados ni volver a entrenar.
+Las llamadas de comparación permanecen comentadas y sus secciones no se han
+modificado al crear las variantes. «Ejecutar todo» no lee otros experimentos ni
+modifica las comparaciones existentes. La selección final se preparará en el
+último cuaderno cuando terminen los entrenamientos; por ahora puede contener
+rutas anteriores al renombrado y no debe activarse.
