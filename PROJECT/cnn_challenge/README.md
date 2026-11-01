@@ -1,5 +1,9 @@
 # CNN challenge
 
+El [primer experimento propio](experiments/experiment_01/README.md) ya está
+preparado a partir del baseline, con una CNN compacta y una selección de tres
+referencias populares para comparar después de entrenar.
+
 La [plantilla](baseline/cnn_challenge_baseline.ipynb) permite entrenar CNN propias
 y arquitecturas populares para clasificar las 13 categorías de xView. Se entrena
 **una red por ejecución, siempre desde cero**, y se guardan los resultados para
