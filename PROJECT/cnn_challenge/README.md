@@ -1,5 +1,9 @@
 # CNN challenge
 
+El [experimento propio 03](experiments/experiment_03/README.md) está preparado para
+subir de 64×64 a 128×128 manteniendo Adam, la arquitectura y las semillas del
+experimento 02. No añade aumentación.
+
 El [experimento propio 02](experiments/experiment_02/README.md) está preparado para
 probar Adam manteniendo la arquitectura y el resto del protocolo del experimento 01.
 

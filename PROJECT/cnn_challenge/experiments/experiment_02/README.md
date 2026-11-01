@@ -192,46 +192,33 @@ la CNN supera al ensayo con SGD sin cambiar capacidad, datos ni pesos iniciales.
 El límite prioritario pasa a ser la **generalización**. No hay una razón empírica
 para aumentar profundidad o filtros antes de probar regularización.
 
-### Propuesta para el experimento 03: aumentación con volteos
+### Siguiente prueba elegida: resolución 128×128
 
-Tomar este experimento como referencia y cambiar únicamente
-`CFG['augmentation'] = True`, conservando los valores ya definidos
-`flip='horizontal_and_vertical'` y `rotation=0.0`. Mantener Adam, LR, arquitectura,
-Dropout, resolución, batch, reparto, semilla y callbacks.
+El [experimento 03](../experiment_03/README.md) ya está preparado para cambiar
+únicamente la entrada de **64×64 a 128×128**, conservando arquitectura, Adam, LR,
+batch, Dropout y callbacks. Se mantienen las semillas de entrenamiento **42**
+y reparto **1**; no se activan volteos ni otra aumentación.
 
-La hipótesis es que clasificar las mismas categorías bajo distintas orientaciones
-horizontales/verticales ayude a generalizar sin añadir parámetros. Es una suposición
-que debe validarse en estas imágenes de satélite; el resultado de aumentación de
-la fase ffNN no garantiza el comportamiento de una CNN.
+La hipótesis es que el detalle adicional ayude a distinguir clases parecidas.
+Con esta arquitectura y GAP se conservan los **288.685 parámetros**, pero crecen
+los mapas de activación y el coste de las convoluciones. Deben medirse accuracy,
+F1, errores por clase, brecha en inferencia y tiempo frente a este experimento 02.
 
-En el pipeline existente, los volteos se aplican dentro del modelo durante el
-entrenamiento, cambian entre pasadas y se desactivan en inferencia; la caché no
-almacena una única versión aumentada de cada imagen
-([RandomFlip de Keras](https://keras.io/api/layers/preprocessing_layers/image_augmentation/random_flip/)).
-Comprobar los pesos iniciales de las capas entrenables, además del resto del
-protocolo, al añadir la capa de aumentación.
-
-La evaluación priorizará accuracy/F1 de validación, CE, brecha en inferencia,
-errores por clase y coste. Una accuracy de train más baja con aumentación activa
-no basta para concluir que la red haya empeorado: hay que evaluar ambos conjuntos
-sin aumentación. La mejora de accuracy no está garantizada y el tiempo por época
-o las épocas necesarias pueden aumentar.
+Es una prueba pendiente de entrenamiento, sin garantía de mejora. La caché de
+128×128 se guardará separadamente de la de 64×64. Las referencias populares de
+Round 1 siguen a 64×64, por lo que el control directo para estudiar la resolución
+es este experimento 02.
 
 ### Alternativas posteriores, en pruebas separadas
 
-1. **Dropout 0.1 → 0.2** o **L2=1e-5**, una técnica por experimento, para estudiar
-   regularización adicional. No combinarlas todavía con el primer ensayo de volteos.
-2. **BN**, si interesa investigar estabilidad y representaciones; no asumir que
-   por sí sola vaya a resolver el sobreajuste.
-3. **Entrada 128×128**, para estudiar detalles de clases difíciles. Con esta CNN
-   y GAP se conservan los parámetros, pero aumenta el coste espacial de las
-   convoluciones. Mantener separado el cambio de resolución del de regularización.
-4. **Repetir las configuraciones mejores con otras semillas**, manteniendo el
-   reparto, antes de interpretar diferencias de pocos aciertos frente a DenseNet121.
+- Volteos horizontales/verticales mediante aumentación, si interesa estudiar su
+  efecto sobre la generalización. No se incluyen en la prueba de resolución.
+- Dropout 0.1 → 0.2 o L2=1e-5, una técnica por experimento.
+- BN, para estudiar estabilidad y representaciones sin asumir una mejora automática.
 
-No se ha creado ni entrenado el experimento 03 en esta actualización. Las futuras
-comparaciones seguirán usando solo DenseNet121 y GoogLeNet como referencias
-populares, además de la CNN propia que se evalúe.
+Las comparaciones futuras seguirán usando solo DenseNet121 y GoogLeNet como
+referencias populares, además de la CNN propia evaluada. Se mantienen las semillas
+actuales en esta serie de experimentos.
 
 ## 7. Resultados conservados y regeneración
 
