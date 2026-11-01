@@ -1,5 +1,8 @@
 # CNN challenge
 
+El [experimento propio 02](experiments/experiment_02/README.md) está preparado para
+probar Adam manteniendo la arquitectura y el resto del protocolo del experimento 01.
+
 El [primer experimento propio](experiments/experiment_01/README.md) ya está
 preparado a partir del baseline, con una CNN compacta y una selección de tres
 referencias populares para comparar después de entrenar.

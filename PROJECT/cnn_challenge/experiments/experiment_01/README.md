@@ -211,8 +211,9 @@ solo con **DenseNet121 —mejor de Round 1— y GoogLeNet —peor—**, además 
 CNN evaluada. La comparación histórica del experimento 01 conserva ResNet18;
 no se reescriben sus resultados para adaptarlos a la selección futura.
 
-Estas propuestas están documentadas, pero el experimento 02 todavía no se ha creado
-ni entrenado como parte de esta actualización.
+La prueba de optimizador ya está preparada en el
+[experimento 02](../experiment_02/README.md), pendiente de entrenar.
+Los demás cambios permanecen como propuestas condicionadas a sus resultados.
 
 ## 7. Resultados conservados y límites de interpretación
 
