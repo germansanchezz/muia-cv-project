@@ -1,5 +1,9 @@
 # CNN challenge
 
+El [experimento propio 05](experiments/experiment_05/README.md) conserva la red
+de 224×224 del 04 y prueba LR inicial 3e-4, L2 1e-5 y reducción del LR por `val_ce`,
+manteniendo selección del checkpoint por accuracy y las mismas semillas.
+
 El [experimento propio 04](experiments/experiment_04/README.md) prueba una CNN
 ampliada a 224×224, con BN, volteos y Dropout 0.2, manteniendo las semillas.
 Desde esta prueba se prioriza mejorar la red propia y se dejan de incluir

@@ -3,7 +3,13 @@
 El [notebook](cnn_experiment_04.ipynb) está preparado para entrenar desde cero a
 **224×224**, tamaño de los recortes originales del benchmark. Combina una CNN
 mayor, Batch Normalization, volteos horizontales/verticales y Dropout 0.2.
-Está pendiente de entrenar.
+La ejecución está completada: **77,76 % de accuracy**, **79,36 % de F1 macro**,
+mejor checkpoint en la época **69** y parada en la **89**. La accuracy de train
+en inferencia alcanza **96,81 %**, con una brecha de **19,05 puntos**. Las
+oscilaciones iniciales de validación disminuyen al reducir el LR.
+
+El [experimento 05](../experiment_05/README.md) conserva este diseño y prueba
+un LR inicial menor, reducción de LR por CE y L2 ligera, sin cambiar las semillas.
 
 ## Motivación
 
@@ -77,8 +83,8 @@ requieren más memoria de entrenamiento; el coste real se medirá en esta ejecuc
 
 `NOTEBOOK_PATH` ya apunta a esta copia. Al ejecutar todo, se guardan `model.keras`
 y siempre `prediction.json` junto al notebook, auxiliares en `artifacts/` y
-figuras PDF en `plots/`. No se ha creado la caché grande ni se ha iniciado el
-entrenamiento al preparar este experimento.
+figuras PDF en `plots/`. La ejecución completa tardó aproximadamente **64,18
+minutos de fit**, con una mediana de **42,78 segundos por época**.
 
 ## Qué evaluar
 
