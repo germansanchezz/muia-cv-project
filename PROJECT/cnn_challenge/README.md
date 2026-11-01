@@ -1,5 +1,10 @@
 # CNN challenge
 
+El [experimento propio 04](experiments/experiment_04/README.md) prueba una CNN
+ampliada a 224×224, con BN, volteos y Dropout 0.2, manteniendo las semillas.
+Desde esta prueba se prioriza mejorar la red propia y se dejan de incluir
+arquitecturas populares en las comparaciones nuevas.
+
 El [experimento propio 03](experiments/experiment_03/README.md) está preparado para
 subir de 64×64 a 128×128 manteniendo Adam, la arquitectura y las semillas del
 experimento 02. No añade aumentación.

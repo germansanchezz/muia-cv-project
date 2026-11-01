@@ -2,7 +2,19 @@
 
 El [notebook](cnn_experiment_03.ipynb) parte del
 [experimento 02](../experiment_02/README.md) y cambia **únicamente la resolución
-de entrada: 64×64 → 128×128**. Está pendiente de entrenar.
+de entrada: 64×64 → 128×128**. La ejecución ya está completada.
+
+Resultado: **70,83 % de accuracy**, **72,14 % de F1 macro**, mejor época **62**
+y parada en la **82**. Train alcanza **99,84 %** en inferencia, con una brecha de
+**29,01 puntos**. El fit tarda **13,64 minutos**, frente a 4,87 del experimento 02.
+Los hashes iniciales y del reparto coinciden. Subir la resolución sin modificar
+la arquitectura no mejoró esta configuración: son **58 aciertos menos** que a 64×64.
+
+El [experimento 04](../experiment_04/README.md) prueba una arquitectura ampliada
+a 224×224 con BN, volteos y Dropout 0.2. Se mantienen las semillas. Desde ese
+experimento se dejan de utilizar referencias populares y se prioriza mejorar
+la CNN propia. La selección de comparación del experimento 03 se conserva como
+configuración histórica, con sus llamadas desactivadas.
 
 Se mantienen la semilla de entrenamiento **42** y la del reparto **1**.
 No se activa aumentación ni se modifica el optimizador.
