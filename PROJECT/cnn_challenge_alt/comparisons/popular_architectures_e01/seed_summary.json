@@ -1,0 +1,62 @@
+[
+  {
+    "runs": [
+      "popular_architectures/resnet18/experiment01"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7802666666666667,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7929779748555519,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.799920501153906,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/densenet121/experiment01"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7930666666666667,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.8104529343670259,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.796194396318455,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/efficientnet_b0/experiment01"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7797333333333333,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7920502285510858,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.78400298993672,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/mobilenet_v2/experiment01"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.776,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7932079853302965,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.7881708019189335,
+    "f1_macro_std": null
+  }
+]
