@@ -55,6 +55,8 @@ Los historiales, métricas y probabilidades guardadas son coherentes: el mejor c
 | [experiment01](densenet121/experiment01/densenet121_experiment01.ipynb) | DenseNet121 | Referencia inicial; máximo 200 épocas | Completado | [Métricas](densenet121/experiment01/artifacts/metrics.json): accuracy 79,31 %, F1 macro 79,62 %, mejor época 67 |
 | [experiment01](efficientnet_b0/experiment01/efficientnet_b0_experiment01.ipynb) | EfficientNetB0 | Referencia inicial; máximo 200 épocas | Completado | [Métricas](efficientnet_b0/experiment01/artifacts/metrics.json): accuracy 77,97 %, F1 macro 78,40 %, mejor época 42 |
 | [experiment01](mobilenet_v2/experiment01/mobilenet_v2_experiment01.ipynb) | MobileNetV2 | Referencia inicial; máximo 200 épocas | Completado | [Métricas](mobilenet_v2/experiment01/artifacts/metrics.json): accuracy 77,60 %, F1 macro 78,82 %, mejor época 60 |
+| [experiment02](resnet18/experiment02/resnet18_experiment02.ipynb) | ResNet18 | Weight decay 1e-4 → 1e-3 para reducir sobreajuste | Preparado, sin entrenar | Pendientes |
+| [experiment02](efficientnet_b0/experiment02/efficientnet_b0_experiment02.ipynb) | EfficientNetB0 | Learning rate 1e-3 → 3e-4 para mejorar optimización | Preparado, sin entrenar | Pendientes |
 
 Al terminar los próximos entrenamientos, actualizar esta tabla con el estado y enlaces a sus métricas, e indicar la mejor época, accuracy y F1 macro de validación. Registrar los resultados de Codabench por separado.
 
@@ -112,6 +114,23 @@ Truck es la clase con menor F1 en las cuatro redes (51,42–55,50 %). Las matric
 Para el objetivo fijado de **maximizar accuracy**, la referencia ganadora de esta ronda es **DenseNet121**. Para combinar **F1 macro y tiempo de entrenamiento observado**, ResNet18 ofrece el mejor compromiso en estas ejecuciones. MobileNetV2 conserva interés si se prioriza el número de parámetros; EfficientNetB0, si se valora la CE de validación.
 
 Las cuatro accuracies están en un intervalo de solo 1,71 puntos porcentuales. Hay una única semilla de entrenamiento y una única partición, y se seleccionan checkpoints sobre esa misma validación: no se ha demostrado una superioridad estadística ni una ventaja en test. Antes de generalizar la clasificación conviene repetir el protocolo con varias semillas manteniendo el reparto fijo. Cualquier cambio de regularización, resolución o criterio de selección debe registrarse como otro experimento; los resultados actuales se conservan tal como se obtuvieron.
+
+## Segunda ronda: EfficientNetB0 y ResNet18
+
+Continuamos afinando **EfficientNetB0 por su menor brecha train–validación (10,98 puntos)** y **ResNet18 por su velocidad de entrenamiento observada (14,06 minutos)**. Las accuracies de las cuatro arquitecturas en validación son similares (77,60–79,31 %), por lo que priorizamos estas dos líneas de mejora. DenseNet121 conserva la mayor accuracy de la primera ronda, pero sus 96,23 minutos de entrenamiento no compensan para esta fase de experimentación. DenseNet121 y MobileNetV2 mantienen sus resultados de referencia; no se preparan nuevas pruebas para ellas en esta ronda.
+
+| Modelo | Modificación en experiment02 | Motivo |
+|---|---|---|
+| ResNet18 | Weight decay `1e-3` (antes `1e-4`); LR se mantiene en `1e-3` | Intentar reducir su sobreajuste |
+| EfficientNetB0 | Learning rate inicial `3e-4` (antes `1e-3`); weight decay se mantiene en `1e-4` | Intentar mejorar la optimización |
+
+Cada notebook es una copia de su `experiment01` y **solo modifica el hiperparámetro indicado**, además de identidad, hipótesis, rutas y selección de comparaciones. Se mantienen 128×128, batch 32, AdamW, semilla 42, reparto, aumentación, callbacks y ausencia de Dropout adicional y label smoothing. Para conservar una única modificación por prueba, se mantienen también los máximos de épocas registrados: **100 en ResNet18 y 200 en EfficientNetB0**.
+
+Ambas pruebas **vuelven a entrenar desde cero** y reutilizan únicamente la caché de imágenes. Sus resultados irán a su propia carpeta `experiment02/`, con generación obligatoria de `prediction.json`. Los resultados de esta ronda todavía están pendientes: las mejoras son hipótesis, no resultados confirmados.
+
+La comparación principal será **cada experiment02 frente al experiment01 de la misma arquitectura**, revisando accuracy y F1 macro, CE, brecha en inferencia y tiempo. En ResNet18 se comprobará que una posible reducción de brecha no venga acompañada de una caída de validación; en EfficientNetB0 se comprobará si el LR menor mejora el resultado dentro del mismo presupuesto. Esta ronda prueba ajustes distintos por modelo y no constituye otra comparación entre arquitecturas bajo hiperparámetros idénticos.
+
+La sección 9 de los nuevos notebooks ya selecciona su referencia y la nueva ejecución. Las comparaciones se guardarán por separado en `cnn_challenge_alt/comparisons/resnet18_experiment02/` y `cnn_challenge_alt/comparisons/efficientnet_b0_experiment02/`. Tras reiniciar el kernel, basta ejecutar la primera celda de código y esa sección para comparar ejecuciones completas.
 
 ## Ejecutar y comparar
 
