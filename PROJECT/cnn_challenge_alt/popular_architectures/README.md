@@ -2,6 +2,8 @@
 
 Comparamos ResNet18, DenseNet121, EfficientNetB0 y MobileNetV2 para las 13 clases de xView. **El diseño inicial establece igualdad de condiciones:** los `experiment01` comparten datos, reparto, semilla, resolución, aumentación, optimizador y criterio de selección. La comparación estudia el cambio de arquitectura; la ejecución de ResNet18 tiene una diferencia en el máximo de épocas, documentada abajo.
 
+**El máximo común es de 200 épocas para todos los entrenamientos**, con EarlyStopping. La ejecución histórica de ResNet18 experiment01 con máximo 100 fue una excepción por error; se conserva porque terminó antes de ese límite.
+
 **Todos los entrenamientos empiezan desde cero**, con inicialización aleatoria, sin pesos preentrenados ni reutilización de checkpoints de otra ejecución. La misma semilla hace reproducible cada configuración; los pesos iniciales y las operaciones internas dependen de la arquitectura.
 
 ## Condiciones comunes previstas para experiment01
@@ -43,7 +45,7 @@ Se selecciona el primer máximo de accuracy de validación y se recarga ese chec
 
 Los cuatro `config.json` y `split.json` confirman el mismo dataset, orden de clases y reparto: **16.871 imágenes de train y 1.875 de validación**, con idénticos hashes de datos y partición. Coinciden el resto de parámetros del protocolo y el entorno registrado: Python 3.10.21, TensorFlow 2.15.1 y NVIDIA GeForce RTX 4070 Ti. Las configuraciones guardadas coinciden con las celdas de sus respectivos notebooks.
 
-**Diferencia respecto al diseño: ResNet18 se ejecutó con `max_epochs=100`; las otras tres, con 200.** Las ejecuciones terminaron en las épocas 71, 87, 62 y 80, respectivamente, exactamente 20 épocas después de su mejor accuracy. Por tanto, ninguna alcanzó su límite y la diferencia de máximo no recortó estas ejecuciones. No se ha modificado la configuración histórica para ocultar esa diferencia.
+**Excepción histórica por error: ResNet18 experiment01 se ejecutó con `max_epochs=100`; las otras tres, con 200. El máximo fijado para todos los entrenamientos es 200.** Las ejecuciones terminaron en las épocas 71, 87, 62 y 80, respectivamente, exactamente 20 épocas después de su mejor accuracy. Por tanto, ninguna alcanzó su límite y la diferencia de máximo no recortó estas ejecuciones. No se ha modificado la configuración histórica para ocultar esa diferencia.
 
 Los historiales, métricas y probabilidades guardadas son coherentes: el mejor checkpoint corresponde al primer máximo de `val_accuracy`, y accuracy, F1 macro y matrices de confusión se han comprobado a partir de `validation_predictions.npz`. Los cuatro notebooks no contienen salidas de error y tienen `prediction.json` con **2.365 predicciones de test** cada uno. No se dispone aquí de etiquetas de test ni de resultados de Codabench.
 
@@ -57,6 +59,8 @@ Los historiales, métricas y probabilidades guardadas son coherentes: el mejor c
 | [experiment01](mobilenet_v2/experiment01/mobilenet_v2_experiment01.ipynb) | MobileNetV2 | Referencia inicial; máximo 200 épocas | Completado | [Métricas](mobilenet_v2/experiment01/artifacts/metrics.json): accuracy 77,60 %, F1 macro 78,82 %, mejor época 60 |
 | [experiment02](resnet18/experiment02/resnet18_experiment02.ipynb) | ResNet18 | Weight decay 1e-4 → 1e-3 para reducir sobreajuste | Completado | [Métricas](resnet18/experiment02/artifacts/metrics.json): accuracy 78,03 %, F1 macro 79,48 %, mejor época 63 |
 | [experiment02](efficientnet_b0/experiment02/efficientnet_b0_experiment02.ipynb) | EfficientNetB0 | Learning rate 1e-3 → 3e-4 para mejorar optimización | Completado | [Métricas](efficientnet_b0/experiment02/artifacts/metrics.json): accuracy 76,75 %, F1 macro 77,90 %, mejor época 79 |
+| [experiment03](resnet18/experiment03/resnet18_experiment03.ipynb) | ResNet18 | Referencia experiment01 + label smoothing 0.1; máximo 200 épocas | Completado | [Métricas](resnet18/experiment03/artifacts/metrics.json): accuracy 79,73 %, F1 macro 81,68 %, mejor época 93 |
+| [experiment03](efficientnet_b0/experiment03/efficientnet_b0_experiment03.ipynb) | EfficientNetB0 | Referencia experiment01 + label smoothing 0.1; máximo 200 épocas | Completado | [Métricas](efficientnet_b0/experiment03/artifacts/metrics.json): accuracy 79,09 %, F1 macro 79,94 %, mejor época 85 |
 
 Al terminar los próximos entrenamientos, actualizar esta tabla con el estado y enlaces a sus métricas, e indicar la mejor época, accuracy y F1 macro de validación. Registrar los resultados de Codabench por separado.
 
@@ -174,9 +178,77 @@ La CE mínima de experiment02 es 0,818 en la época 30, peor que la mínima de e
 
 **Se conservan los experiment01 como referencias preferidas en las dos arquitecturas.** Para ResNet18, el weight decay `1e-4` mantiene la misma accuracy y ofrece mejor F1 macro, menor CE y menor brecha que `1e-3`. Para EfficientNetB0, el LR inicial `1e-3` supera a `3e-4` en accuracy, F1 macro, recall macro, CE y brecha, y requiere menos épocas.
 
-Los dos ajustes ensayados no aportaron la mejora buscada; esto no demuestra que aumentar regularización o reducir LR sea siempre perjudicial. Son observaciones de una ejecución por configuración, seleccionadas sobre una única validación, sin resultados etiquetados de test. Cualquier siguiente prueba debe partir explícitamente de la referencia elegida y registrar su cambio; no se han creado ni ejecutado nuevos experimentos al hacer este análisis.
+Los dos ajustes ensayados no aportaron la mejora buscada; esto no demuestra que aumentar regularización o reducir LR sea siempre perjudicial. Son observaciones de una ejecución por configuración, seleccionadas sobre una única validación, sin resultados etiquetados de test. Cualquier siguiente prueba debe partir explícitamente de la referencia elegida y registrar su cambio; los resultados de experiment03 se analizan en la siguiente sección.
 
 Las comparaciones están guardadas por separado en `cnn_challenge_alt/comparisons/resnet18_experiment02/` y `cnn_challenge_alt/comparisons/efficientnet_b0_experiment02/`. Tras reiniciar el kernel, la primera celda de código y la sección 9 de los notebooks de experiment02 permiten regenerarlas desde artefactos, sin entrenar.
+
+## Tercera ronda: label smoothing 0.1 en ambas redes
+
+Se recuperó la configuración de **experiment01** para **ResNet18 y EfficientNetB0**: learning rate inicial **`1e-3`** y weight decay **`1e-4`**. No se acumularon los ajustes de experiment02, que no aportaron mejora. El factor probado fue **label smoothing `0.0 → 0.1`**, con máximo común de **200 épocas**.
+
+### Protocolo y comprobación de artefactos
+
+Se mantienen 128×128, batch 32, AdamW, semilla 42, reparto, aumentación, callbacks y ausencia de Dropout adicional y L2. Coinciden los hashes de datos, reparto y pesos iniciales respecto a la referencia de cada arquitectura, así como el entorno registrado. Se entrenó desde cero en los dos casos y se generaron **2.365 predicciones de test** por ejecución.
+
+Se han comprobado accuracy, F1 macro, AP macro, matriz de confusión, orden de validación y selección del mejor checkpoint contra `validation_predictions.npz`, `split.json` e historiales. Las configuraciones guardadas coinciden con las de los notebooks y sus salidas no contienen errores. No se ha reentrenado ni modificado ningún notebook para hacer este análisis.
+
+La ejecución histórica de ResNet18 experiment01 tuvo máximo 100 por error y se conserva porque terminó en la época 71. Experiment03 usa 200 y termina en la 113; su mejor checkpoint es el de la **época 93**, antes del límite antiguo. Se mantiene la norma de 200 épocas para todos los entrenamientos futuros.
+
+La pérdida `loss` usa etiquetas suavizadas en experiment03 y no representa el mismo objetivo que en experiment01. Para comparar probabilidades se usa **`ce`, sin suavizado**, cuya configuración se conserva en las métricas. [Keras documenta el parámetro de suavizado de la pérdida](https://www.tensorflow.org/api_docs/python/tf/keras/losses/CategoricalCrossentropy) y [el de la métrica de CE](https://www.tensorflow.org/api_docs/python/tf/keras/metrics/CategoricalCrossentropy).
+
+### Resultados frente a experiment01
+
+Métricas del mejor checkpoint por `val_accuracy`, no de la última época. Accuracy y F1 se expresan en %, y las diferencias en puntos porcentuales.
+
+| Modelo | Experimento | Accuracy validación | F1 macro | CE sin suavizado ↓ | AP macro (%) |
+|---|---|---:|---:|---:|---:|
+| ResNet18 | experiment01 | 78,03 | 79,99 | 0,973 | 85,47 |
+| ResNet18 | experiment03 | 79,73 | 81,68 | 0,777 | 84,27 |
+| EfficientNetB0 | experiment01 | 77,97 | 78,40 | 0,769 | 84,59 |
+| EfficientNetB0 | experiment03 | 79,09 | 79,94 | 0,796 | 81,25 |
+
+| Modelo | Experimento | Accuracy train (%) | Brecha train–validación (puntos) | Mejor época / ejecutadas | Entrenamiento (min) |
+|---|---|---:|---:|---:|---:|
+| ResNet18 | experiment01 | 97,10 | 19,07 | 51 / 71 | 14,06 |
+| ResNet18 | experiment03 | 99,96 | 20,23 | 93 / 113 | 23,44 |
+| EfficientNetB0 | experiment01 | 88,95 | 10,98 | 42 / 62 | 48,41 |
+| EfficientNetB0 | experiment03 | 98,30 | 19,21 | 85 / 105 | 80,79 |
+
+Fuentes: métricas individuales del registro, [comparación ResNet18](../comparisons/resnet18_experiment03/comparison.csv) y [comparación EfficientNetB0](../comparisons/efficientnet_b0_experiment03/comparison.csv). Curvas: [ResNet18](../comparisons/resnet18_experiment03/comparison_curves.pdf) y [EfficientNetB0](../comparisons/efficientnet_b0_experiment03/comparison_curves.pdf).
+
+### ResNet18: mejora clara en las métricas de clasificación de esta ejecución
+
+La accuracy sube de **78,03 % a 79,73 %** (+1,71 puntos), con **1.463 → 1.495 aciertos**, 32 más. El F1 macro sube de **79,99 % a 81,68 %** (+1,69 puntos) y la CE baja de **0,973 a 0,777**. Es la primera modificación que mejora conjuntamente estas tres medidas frente a experiment01. Experiment03 corrige 138 errores de la referencia, aunque pierde otros 106 aciertos: la mejora neta no implica que gane en cada imagen o clase.
+
+El F1 mejora en clases difíciles: Dump truck **63,90 → 69,96 %**, Truck **55,48 → 59,52 %**, Fishing vessel **76,25 → 80,27 %** y Shipping container **72,12 → 75,62 %**. Truck aporta 12 aciertos adicionales, Shipping container 10, Dump truck 8 y Excavator 6, entre las ganancias y pérdidas del resto de categorías. Pylon empeora de 96,88 % a 93,55 % de F1 con solo 32 muestras, y Helipad conserva 94,12 % con nueve positivos.
+
+Los errores con probabilidad asignada a la clase equivocada superior al 99 % pasan de **54 a 0**; los superiores al 90 %, de **150 a 35**. La confianza media en la clase predicha entre los errores baja de 76,72 % a 64,23 %. Estos datos respaldan la reducción de errores extremadamente confiados, pero no sustituyen un estudio de calibración.
+
+**No se reduce la brecha de accuracy:** pasa de 19,07 a **20,23 puntos**, porque train sube de 97,10 % a 99,96 %. Tampoco mejora todo: AP macro baja de **85,47 % a 84,27 %**. Mejoran el argmax y la CE del checkpoint seleccionado, pero no el ranking resumido por AP. Además, la CE mínima del historial (0,749, época 42) es inferior a la CE de la época 93 seleccionada por accuracy (0,777): los dos criterios siguen eligiendo épocas diferentes.
+
+El entrenamiento pasa de 71 a 113 épocas y de 14,06 a **23,44 minutos**. El tiempo medio por época es parecido (11,89 → 12,45 segundos); el aumento total se explica principalmente por la mayor duración del entrenamiento, sin convertir esta comparación en un benchmark controlado.
+
+### EfficientNetB0: mejor accuracy y F1, con contrapartidas
+
+La accuracy sube de **77,97 % a 79,09 %** (+1,12 puntos): **1.462 → 1.483 aciertos**, 21 más. El F1 macro aumenta de **78,40 % a 79,94 %** (+1,54 puntos). Destacan Fishing vessel (**72,00 → 83,33 %** de F1), Motorboat (**72,38 → 78,34 %**) y Storage tank (**83,99 → 86,81 %**). Truck empeora de 55,50 % a 53,57 % y Helipad de 81,82 % a 77,78 %, por lo que tampoco es una mejora uniforme.
+
+La **CE empeora ligeramente, de 0,769 a 0,796**, y AP macro baja de **84,59 % a 81,25 %**. Los errores con confianza superior al 99 % desaparecen (9 → 0), pero la confianza media de los errores apenas cambia (68,88 % → 68,32 %). Eliminar esos errores extremos no basta para garantizar una CE o calibración mejores en el conjunto completo.
+
+La accuracy de train sube de 88,95 % a 98,30 %, y la brecha aumenta de **10,98 a 19,21 puntos** (+8,23). El mejor checkpoint llega en la época 85, frente a la 42; el entrenamiento pasa de 62 a 105 épocas y de 48,41 a **80,79 minutos**. Su CE mínima también queda algo por encima de la referencia: 0,727 frente a 0,708. El label smoothing mejora la clasificación observada, pero no cumple una interpretación de «reducir sobreajuste» basada en la brecha ni mejora todas las medidas de las probabilidades.
+
+### Decisión tras la tercera ronda
+
+**Sí han sido útiles las modificaciones para accuracy y F1 macro, y se toman ambos experiment03 como nuevas referencias para ese objetivo. ResNet18 experiment03 es la prioridad para seguir afinando:** obtiene la mayor accuracy (**79,73 %**) y F1 macro (**81,68 %**) de todas las configuraciones revisadas hasta ahora, con 23,44 minutos de entrenamiento frente a 80,79 de EfficientNetB0 experiment03.
+
+La ventaja sobre DenseNet121 experiment01 es pequeña en accuracy: **1.495 frente a 1.487 aciertos**, ocho imágenes. Frente a EfficientNetB0 experiment03 son 12 aciertos más. Estas diferencias no demuestran una superioridad general con una sola semilla y una única partición. Si se priorizan la CE o AP en lugar de accuracy/F1, conviene conservar las referencias sin suavizado para valorar ese compromiso; EfficientNetB0 experiment01 aún tiene mejor CE y AP que su experiment03.
+
+### Siguientes pruebas propuestas, todavía no preparadas
+
+1. **Priorizar ResNet18 y probar label smoothing `0.05`**, manteniendo LR `1e-3`, weight decay `1e-4`, entrada 128×128 y máximo 200 épocas. Es una propuesta de ajuste local: comparar con `0.0` y `0.1` para comprobar si conserva la ganancia de accuracy/F1 con un mejor compromiso de CE y AP. No se presupone que `0.05` vaya a mejorar.
+2. **Repetir la referencia elegida con otras semillas de entrenamiento**, manteniendo el reparto fijo, para comprobar la estabilidad de la mejora antes de acumular nuevos cambios. Cada semilla debe quedar en una carpeta distinta y los resultados resumirse por configuración.
+3. **Después, una prueba de resolución 192×192 en ResNet18**, conservando la mejor configuración de suavizado. La hipótesis sería mejorar las clases de vehículos que siguen concentrando errores, especialmente Truck y Bus; debe medirse si la información adicional compensa el coste. Se cambiaría solo la resolución y se generaría su caché propia, sin asumir una ganancia de antemano.
+
+Estas propuestas se basan en las métricas y el coste observados. No se han creado experiment04 ni iniciado entrenamientos. Los resultados de las tres rondas quedan conservados y las comparaciones de esta última están en `cnn_challenge_alt/comparisons/resnet18_experiment03/` y `cnn_challenge_alt/comparisons/efficientnet_b0_experiment03/`.
 
 ## Ejecutar y comparar
 

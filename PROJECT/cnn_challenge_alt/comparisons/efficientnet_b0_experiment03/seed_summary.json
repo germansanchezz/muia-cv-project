@@ -1,0 +1,32 @@
+[
+  {
+    "runs": [
+      "popular_architectures/efficientnet_b0/experiment01"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7797333333333333,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7920502285510858,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.78400298993672,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/efficientnet_b0/experiment03"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7909333333333334,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.8033282997818778,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.7993753309950937,
+    "f1_macro_std": null
+  }
+]
