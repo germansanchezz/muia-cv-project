@@ -1,0 +1,289 @@
+Model: "custom_scratch"
+__________________________________________________________________________________________________
+ Layer (type)                Output Shape                 Param #   Connected to                  
+==================================================================================================
+ rgb_0_1 (InputLayer)        [(None, 128, 128, 3)]        0         []                            
+                                                                                                  
+ stem1_conv (Conv2D)         (None, 128, 128, 32)         864       ['rgb_0_1[0][0]']             
+                                                                                                  
+ stem1_bn (BatchNormalizati  (None, 128, 128, 32)         128       ['stem1_conv[0][0]']          
+ on)                                                                                              
+                                                                                                  
+ stem1_relu (Activation)     (None, 128, 128, 32)         0         ['stem1_bn[0][0]']            
+                                                                                                  
+ stem2_conv (Conv2D)         (None, 64, 64, 32)           9216      ['stem1_relu[0][0]']          
+                                                                                                  
+ stem2_bn (BatchNormalizati  (None, 64, 64, 32)           128       ['stem2_conv[0][0]']          
+ on)                                                                                              
+                                                                                                  
+ stem2_relu (Activation)     (None, 64, 64, 32)           0         ['stem2_bn[0][0]']            
+                                                                                                  
+ s1_b1_main1_conv (Conv2D)   (None, 64, 64, 32)           9216      ['stem2_relu[0][0]']          
+                                                                                                  
+ s1_b1_main1_bn (BatchNorma  (None, 64, 64, 32)           128       ['s1_b1_main1_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s1_b1_main1_relu (Activati  (None, 64, 64, 32)           0         ['s1_b1_main1_bn[0][0]']      
+ on)                                                                                              
+                                                                                                  
+ s1_b1_main2_conv (Conv2D)   (None, 64, 64, 32)           9216      ['s1_b1_main1_relu[0][0]']    
+                                                                                                  
+ s1_b1_main2_bn (BatchNorma  (None, 64, 64, 32)           128       ['s1_b1_main2_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s1_b1_se_squeeze (GlobalAv  (None, 32)                   0         ['s1_b1_main2_bn[0][0]']      
+ eragePooling2D)                                                                                  
+                                                                                                  
+ s1_b1_se_reduce (Dense)     (None, 4)                    132       ['s1_b1_se_squeeze[0][0]']    
+                                                                                                  
+ s1_b1_se_expand (Dense)     (None, 32)                   160       ['s1_b1_se_reduce[0][0]']     
+                                                                                                  
+ s1_b1_se_reshape (Reshape)  (None, 1, 1, 32)             0         ['s1_b1_se_expand[0][0]']     
+                                                                                                  
+ s1_b1_se_scale (Multiply)   (None, 64, 64, 32)           0         ['s1_b1_main2_bn[0][0]',      
+                                                                     's1_b1_se_reshape[0][0]']    
+                                                                                                  
+ s1_b1_add (Add)             (None, 64, 64, 32)           0         ['stem2_relu[0][0]',          
+                                                                     's1_b1_se_scale[0][0]']      
+                                                                                                  
+ s1_b1_out (Activation)      (None, 64, 64, 32)           0         ['s1_b1_add[0][0]']           
+                                                                                                  
+ s1_b2_main1_conv (Conv2D)   (None, 64, 64, 32)           9216      ['s1_b1_out[0][0]']           
+                                                                                                  
+ s1_b2_main1_bn (BatchNorma  (None, 64, 64, 32)           128       ['s1_b2_main1_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s1_b2_main1_relu (Activati  (None, 64, 64, 32)           0         ['s1_b2_main1_bn[0][0]']      
+ on)                                                                                              
+                                                                                                  
+ s1_b2_main2_conv (Conv2D)   (None, 64, 64, 32)           9216      ['s1_b2_main1_relu[0][0]']    
+                                                                                                  
+ s1_b2_main2_bn (BatchNorma  (None, 64, 64, 32)           128       ['s1_b2_main2_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s1_b2_se_squeeze (GlobalAv  (None, 32)                   0         ['s1_b2_main2_bn[0][0]']      
+ eragePooling2D)                                                                                  
+                                                                                                  
+ s1_b2_se_reduce (Dense)     (None, 4)                    132       ['s1_b2_se_squeeze[0][0]']    
+                                                                                                  
+ s1_b2_se_expand (Dense)     (None, 32)                   160       ['s1_b2_se_reduce[0][0]']     
+                                                                                                  
+ s1_b2_se_reshape (Reshape)  (None, 1, 1, 32)             0         ['s1_b2_se_expand[0][0]']     
+                                                                                                  
+ s1_b2_se_scale (Multiply)   (None, 64, 64, 32)           0         ['s1_b2_main2_bn[0][0]',      
+                                                                     's1_b2_se_reshape[0][0]']    
+                                                                                                  
+ s1_b2_add (Add)             (None, 64, 64, 32)           0         ['s1_b1_out[0][0]',           
+                                                                     's1_b2_se_scale[0][0]']      
+                                                                                                  
+ s1_b2_out (Activation)      (None, 64, 64, 32)           0         ['s1_b2_add[0][0]']           
+                                                                                                  
+ s2_b1_main1_conv (Conv2D)   (None, 32, 32, 64)           18432     ['s1_b2_out[0][0]']           
+                                                                                                  
+ s2_b1_main1_bn (BatchNorma  (None, 32, 32, 64)           256       ['s2_b1_main1_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s2_b1_main1_relu (Activati  (None, 32, 32, 64)           0         ['s2_b1_main1_bn[0][0]']      
+ on)                                                                                              
+                                                                                                  
+ s2_b1_main2_conv (Conv2D)   (None, 32, 32, 64)           36864     ['s2_b1_main1_relu[0][0]']    
+                                                                                                  
+ s2_b1_main2_bn (BatchNorma  (None, 32, 32, 64)           256       ['s2_b1_main2_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s2_b1_se_squeeze (GlobalAv  (None, 64)                   0         ['s2_b1_main2_bn[0][0]']      
+ eragePooling2D)                                                                                  
+                                                                                                  
+ s2_b1_se_reduce (Dense)     (None, 8)                    520       ['s2_b1_se_squeeze[0][0]']    
+                                                                                                  
+ s2_b1_se_expand (Dense)     (None, 64)                   576       ['s2_b1_se_reduce[0][0]']     
+                                                                                                  
+ s2_b1_shortcut_conv (Conv2  (None, 32, 32, 64)           2048      ['s1_b2_out[0][0]']           
+ D)                                                                                               
+                                                                                                  
+ s2_b1_se_reshape (Reshape)  (None, 1, 1, 64)             0         ['s2_b1_se_expand[0][0]']     
+                                                                                                  
+ s2_b1_shortcut_bn (BatchNo  (None, 32, 32, 64)           256       ['s2_b1_shortcut_conv[0][0]'] 
+ rmalization)                                                                                     
+                                                                                                  
+ s2_b1_se_scale (Multiply)   (None, 32, 32, 64)           0         ['s2_b1_main2_bn[0][0]',      
+                                                                     's2_b1_se_reshape[0][0]']    
+                                                                                                  
+ s2_b1_add (Add)             (None, 32, 32, 64)           0         ['s2_b1_shortcut_bn[0][0]',   
+                                                                     's2_b1_se_scale[0][0]']      
+                                                                                                  
+ s2_b1_out (Activation)      (None, 32, 32, 64)           0         ['s2_b1_add[0][0]']           
+                                                                                                  
+ s2_b2_main1_conv (Conv2D)   (None, 32, 32, 64)           36864     ['s2_b1_out[0][0]']           
+                                                                                                  
+ s2_b2_main1_bn (BatchNorma  (None, 32, 32, 64)           256       ['s2_b2_main1_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s2_b2_main1_relu (Activati  (None, 32, 32, 64)           0         ['s2_b2_main1_bn[0][0]']      
+ on)                                                                                              
+                                                                                                  
+ s2_b2_main2_conv (Conv2D)   (None, 32, 32, 64)           36864     ['s2_b2_main1_relu[0][0]']    
+                                                                                                  
+ s2_b2_main2_bn (BatchNorma  (None, 32, 32, 64)           256       ['s2_b2_main2_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s2_b2_se_squeeze (GlobalAv  (None, 64)                   0         ['s2_b2_main2_bn[0][0]']      
+ eragePooling2D)                                                                                  
+                                                                                                  
+ s2_b2_se_reduce (Dense)     (None, 8)                    520       ['s2_b2_se_squeeze[0][0]']    
+                                                                                                  
+ s2_b2_se_expand (Dense)     (None, 64)                   576       ['s2_b2_se_reduce[0][0]']     
+                                                                                                  
+ s2_b2_se_reshape (Reshape)  (None, 1, 1, 64)             0         ['s2_b2_se_expand[0][0]']     
+                                                                                                  
+ s2_b2_se_scale (Multiply)   (None, 32, 32, 64)           0         ['s2_b2_main2_bn[0][0]',      
+                                                                     's2_b2_se_reshape[0][0]']    
+                                                                                                  
+ s2_b2_add (Add)             (None, 32, 32, 64)           0         ['s2_b1_out[0][0]',           
+                                                                     's2_b2_se_scale[0][0]']      
+                                                                                                  
+ s2_b2_out (Activation)      (None, 32, 32, 64)           0         ['s2_b2_add[0][0]']           
+                                                                                                  
+ s3_b1_main1_conv (Conv2D)   (None, 16, 16, 128)          73728     ['s2_b2_out[0][0]']           
+                                                                                                  
+ s3_b1_main1_bn (BatchNorma  (None, 16, 16, 128)          512       ['s3_b1_main1_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s3_b1_main1_relu (Activati  (None, 16, 16, 128)          0         ['s3_b1_main1_bn[0][0]']      
+ on)                                                                                              
+                                                                                                  
+ s3_b1_main2_conv (Conv2D)   (None, 16, 16, 128)          147456    ['s3_b1_main1_relu[0][0]']    
+                                                                                                  
+ s3_b1_main2_bn (BatchNorma  (None, 16, 16, 128)          512       ['s3_b1_main2_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s3_b1_se_squeeze (GlobalAv  (None, 128)                  0         ['s3_b1_main2_bn[0][0]']      
+ eragePooling2D)                                                                                  
+                                                                                                  
+ s3_b1_se_reduce (Dense)     (None, 16)                   2064      ['s3_b1_se_squeeze[0][0]']    
+                                                                                                  
+ s3_b1_se_expand (Dense)     (None, 128)                  2176      ['s3_b1_se_reduce[0][0]']     
+                                                                                                  
+ s3_b1_shortcut_conv (Conv2  (None, 16, 16, 128)          8192      ['s2_b2_out[0][0]']           
+ D)                                                                                               
+                                                                                                  
+ s3_b1_se_reshape (Reshape)  (None, 1, 1, 128)            0         ['s3_b1_se_expand[0][0]']     
+                                                                                                  
+ s3_b1_shortcut_bn (BatchNo  (None, 16, 16, 128)          512       ['s3_b1_shortcut_conv[0][0]'] 
+ rmalization)                                                                                     
+                                                                                                  
+ s3_b1_se_scale (Multiply)   (None, 16, 16, 128)          0         ['s3_b1_main2_bn[0][0]',      
+                                                                     's3_b1_se_reshape[0][0]']    
+                                                                                                  
+ s3_b1_add (Add)             (None, 16, 16, 128)          0         ['s3_b1_shortcut_bn[0][0]',   
+                                                                     's3_b1_se_scale[0][0]']      
+                                                                                                  
+ s3_b1_out (Activation)      (None, 16, 16, 128)          0         ['s3_b1_add[0][0]']           
+                                                                                                  
+ s3_b2_main1_conv (Conv2D)   (None, 16, 16, 128)          147456    ['s3_b1_out[0][0]']           
+                                                                                                  
+ s3_b2_main1_bn (BatchNorma  (None, 16, 16, 128)          512       ['s3_b2_main1_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s3_b2_main1_relu (Activati  (None, 16, 16, 128)          0         ['s3_b2_main1_bn[0][0]']      
+ on)                                                                                              
+                                                                                                  
+ s3_b2_main2_conv (Conv2D)   (None, 16, 16, 128)          147456    ['s3_b2_main1_relu[0][0]']    
+                                                                                                  
+ s3_b2_main2_bn (BatchNorma  (None, 16, 16, 128)          512       ['s3_b2_main2_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s3_b2_se_squeeze (GlobalAv  (None, 128)                  0         ['s3_b2_main2_bn[0][0]']      
+ eragePooling2D)                                                                                  
+                                                                                                  
+ s3_b2_se_reduce (Dense)     (None, 16)                   2064      ['s3_b2_se_squeeze[0][0]']    
+                                                                                                  
+ s3_b2_se_expand (Dense)     (None, 128)                  2176      ['s3_b2_se_reduce[0][0]']     
+                                                                                                  
+ s3_b2_se_reshape (Reshape)  (None, 1, 1, 128)            0         ['s3_b2_se_expand[0][0]']     
+                                                                                                  
+ s3_b2_se_scale (Multiply)   (None, 16, 16, 128)          0         ['s3_b2_main2_bn[0][0]',      
+                                                                     's3_b2_se_reshape[0][0]']    
+                                                                                                  
+ s3_b2_add (Add)             (None, 16, 16, 128)          0         ['s3_b1_out[0][0]',           
+                                                                     's3_b2_se_scale[0][0]']      
+                                                                                                  
+ s3_b2_out (Activation)      (None, 16, 16, 128)          0         ['s3_b2_add[0][0]']           
+                                                                                                  
+ s4_b1_main1_conv (Conv2D)   (None, 8, 8, 256)            294912    ['s3_b2_out[0][0]']           
+                                                                                                  
+ s4_b1_main1_bn (BatchNorma  (None, 8, 8, 256)            1024      ['s4_b1_main1_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s4_b1_main1_relu (Activati  (None, 8, 8, 256)            0         ['s4_b1_main1_bn[0][0]']      
+ on)                                                                                              
+                                                                                                  
+ s4_b1_main2_conv (Conv2D)   (None, 8, 8, 256)            589824    ['s4_b1_main1_relu[0][0]']    
+                                                                                                  
+ s4_b1_main2_bn (BatchNorma  (None, 8, 8, 256)            1024      ['s4_b1_main2_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s4_b1_se_squeeze (GlobalAv  (None, 256)                  0         ['s4_b1_main2_bn[0][0]']      
+ eragePooling2D)                                                                                  
+                                                                                                  
+ s4_b1_se_reduce (Dense)     (None, 32)                   8224      ['s4_b1_se_squeeze[0][0]']    
+                                                                                                  
+ s4_b1_se_expand (Dense)     (None, 256)                  8448      ['s4_b1_se_reduce[0][0]']     
+                                                                                                  
+ s4_b1_shortcut_conv (Conv2  (None, 8, 8, 256)            32768     ['s3_b2_out[0][0]']           
+ D)                                                                                               
+                                                                                                  
+ s4_b1_se_reshape (Reshape)  (None, 1, 1, 256)            0         ['s4_b1_se_expand[0][0]']     
+                                                                                                  
+ s4_b1_shortcut_bn (BatchNo  (None, 8, 8, 256)            1024      ['s4_b1_shortcut_conv[0][0]'] 
+ rmalization)                                                                                     
+                                                                                                  
+ s4_b1_se_scale (Multiply)   (None, 8, 8, 256)            0         ['s4_b1_main2_bn[0][0]',      
+                                                                     's4_b1_se_reshape[0][0]']    
+                                                                                                  
+ s4_b1_add (Add)             (None, 8, 8, 256)            0         ['s4_b1_shortcut_bn[0][0]',   
+                                                                     's4_b1_se_scale[0][0]']      
+                                                                                                  
+ s4_b1_out (Activation)      (None, 8, 8, 256)            0         ['s4_b1_add[0][0]']           
+                                                                                                  
+ s4_b2_main1_conv (Conv2D)   (None, 8, 8, 256)            589824    ['s4_b1_out[0][0]']           
+                                                                                                  
+ s4_b2_main1_bn (BatchNorma  (None, 8, 8, 256)            1024      ['s4_b2_main1_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s4_b2_main1_relu (Activati  (None, 8, 8, 256)            0         ['s4_b2_main1_bn[0][0]']      
+ on)                                                                                              
+                                                                                                  
+ s4_b2_main2_conv (Conv2D)   (None, 8, 8, 256)            589824    ['s4_b2_main1_relu[0][0]']    
+                                                                                                  
+ s4_b2_main2_bn (BatchNorma  (None, 8, 8, 256)            1024      ['s4_b2_main2_conv[0][0]']    
+ lization)                                                                                        
+                                                                                                  
+ s4_b2_se_squeeze (GlobalAv  (None, 256)                  0         ['s4_b2_main2_bn[0][0]']      
+ eragePooling2D)                                                                                  
+                                                                                                  
+ s4_b2_se_reduce (Dense)     (None, 32)                   8224      ['s4_b2_se_squeeze[0][0]']    
+                                                                                                  
+ s4_b2_se_expand (Dense)     (None, 256)                  8448      ['s4_b2_se_reduce[0][0]']     
+                                                                                                  
+ s4_b2_se_reshape (Reshape)  (None, 1, 1, 256)            0         ['s4_b2_se_expand[0][0]']     
+                                                                                                  
+ s4_b2_se_scale (Multiply)   (None, 8, 8, 256)            0         ['s4_b2_main2_bn[0][0]',      
+                                                                     's4_b2_se_reshape[0][0]']    
+                                                                                                  
+ s4_b2_add (Add)             (None, 8, 8, 256)            0         ['s4_b1_out[0][0]',           
+                                                                     's4_b2_se_scale[0][0]']      
+                                                                                                  
+ s4_b2_out (Activation)      (None, 8, 8, 256)            0         ['s4_b2_add[0][0]']           
+                                                                                                  
+ global_average_pooling2d (  (None, 256)                  0         ['s4_b2_out[0][0]']           
+ GlobalAveragePooling2D)                                                                          
+                                                                                                  
+ classification (Dense)      (None, 13)                   3341      ['global_average_pooling2d[0][
+                                                                    0]']                          
+                                                                                                  
+==================================================================================================
+Total params: 2857125 (10.90 MB)
+Trainable params: 2852261 (10.88 MB)
+Non-trainable params: 4864 (19.00 KB)
+__________________________________________________________________________________________________
