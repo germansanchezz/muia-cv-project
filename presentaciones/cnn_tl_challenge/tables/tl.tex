@@ -1,0 +1,13 @@
+\begin{tabular}{@{}clrrr@{}}
+\toprule
+\textbf{Exp.} & \textbf{Configuración} & \textbf{Acc. (\%)} & \textbf{F1 (\%)} & \textbf{Brecha} \\
+\midrule
+1 & Extractor fijo, 128 px & 70,72 & 71,66 & 7,11 \\
+2 & FT parcial & 75,20 & 76,76 & 21,47 \\
+3 & FT parcial + MixUp 0.2 & 76,96 & 79,25 & 14,98 \\
+4 & FT completo salvo BN & 77,97 & 79,34 & 13,40 \\
+5 & 192 px & 80,16 & 82,02 & 12,16 \\
+6 & LR $3\cdot10^{-5}$ & 80,91 & 83,18 & 18,69 \\
+7 & MixUp 0.4 & 80,80 & 82,62 & 9,37 \\
+\bottomrule
+\end{tabular}

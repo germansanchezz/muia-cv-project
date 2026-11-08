@@ -1,0 +1,11 @@
+\begin{tabular}{@{}llrr@{}}
+\toprule
+\textbf{Red} & \textbf{Cambio frente a referencia} & \textbf{Acc. (\%)} & \textbf{F1 (\%)} \\
+\midrule
+ResNet18 & WD $10^{-3}$ & 78,03 & 79,48 \\
+EfficientNetB0 & LR $3\cdot10^{-4}$ & 76,75 & 77,90 \\
+ResNet18 & Label smoothing 0.1 & 79,73 & 81,68 \\
+EfficientNetB0 & Label smoothing 0.1 & 79,09 & 79,94 \\
+ResNet18 & Smoothing 0.1 + $192\times192$ & 80,11 & 82,24 \\
+\bottomrule
+\end{tabular}

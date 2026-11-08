@@ -1,0 +1,275 @@
+[
+  {
+    "run": "cnn_challenge_alt/popular_architectures/resnet18/experiment01",
+    "accuracy": 0.7802666666666667,
+    "f1_macro": 0.799920501153906,
+    "ce": 0.9731027483940125,
+    "params": 11192781,
+    "best_epoch": 51,
+    "epochs_run": 71,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/popular_architectures/densenet121/experiment01",
+    "accuracy": 0.7930666666666667,
+    "f1_macro": 0.796194396318455,
+    "ce": 1.4632452726364136,
+    "params": 7050829,
+    "best_epoch": 67,
+    "epochs_run": 87,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/popular_architectures/efficientnet_b0/experiment01",
+    "accuracy": 0.7797333333333333,
+    "f1_macro": 0.78400298993672,
+    "ce": 0.7691454291343689,
+    "params": 4066224,
+    "best_epoch": 42,
+    "epochs_run": 62,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/popular_architectures/mobilenet_v2/experiment01",
+    "accuracy": 0.776,
+    "f1_macro": 0.7881708019189335,
+    "ce": 0.7826282978057861,
+    "params": 2274637,
+    "best_epoch": 60,
+    "epochs_run": 80,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/popular_architectures/resnet18/experiment02",
+    "accuracy": 0.7802666666666667,
+    "f1_macro": 0.7948236649175446,
+    "ce": 1.211607575416565,
+    "params": 11192781,
+    "best_epoch": 63,
+    "epochs_run": 83,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/popular_architectures/resnet18/experiment03",
+    "accuracy": 0.7973333333333333,
+    "f1_macro": 0.8168300024917876,
+    "ce": 0.7774243354797363,
+    "params": 11192781,
+    "best_epoch": 93,
+    "epochs_run": 113,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/popular_architectures/resnet18/experiment04",
+    "accuracy": 0.8010666666666667,
+    "f1_macro": 0.8223832912410093,
+    "ce": 0.7562455534934998,
+    "params": 11192781,
+    "best_epoch": 115,
+    "epochs_run": 135,
+    "image_size": [
+      192,
+      192
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/popular_architectures/efficientnet_b0/experiment02",
+    "accuracy": 0.7674666666666666,
+    "f1_macro": 0.7789841564717105,
+    "ce": 1.0444355010986328,
+    "params": 4066224,
+    "best_epoch": 79,
+    "epochs_run": 99,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/popular_architectures/efficientnet_b0/experiment03",
+    "accuracy": 0.7909333333333334,
+    "f1_macro": 0.7993753309950937,
+    "ce": 0.79603511095047,
+    "params": 4066224,
+    "best_epoch": 85,
+    "epochs_run": 105,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/experiments/experiment01",
+    "accuracy": 0.7914666666666667,
+    "f1_macro": 0.801819011808626,
+    "ce": 0.8089478015899658,
+    "params": 2857125,
+    "best_epoch": 44,
+    "epochs_run": 64,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/experiments/experiment02",
+    "accuracy": 0.7904,
+    "f1_macro": 0.8072586525211083,
+    "ce": 0.8000190258026123,
+    "params": 2857125,
+    "best_epoch": 66,
+    "epochs_run": 86,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/experiments/experiment03",
+    "accuracy": 0.8069333333333333,
+    "f1_macro": 0.8226856027806295,
+    "ce": 0.6945807337760925,
+    "params": 2857125,
+    "best_epoch": 97,
+    "epochs_run": 117,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/experiments/experiment04",
+    "accuracy": 0.8016,
+    "f1_macro": 0.813814163680944,
+    "ce": 0.645869791507721,
+    "params": 2857125,
+    "best_epoch": 77,
+    "epochs_run": 97,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "cnn_challenge_alt/experiments/experiment05",
+    "accuracy": 0.7946666666666666,
+    "f1_macro": 0.810173874790302,
+    "ce": 0.7040578722953796,
+    "params": 2857125,
+    "best_epoch": 95,
+    "epochs_run": 115,
+    "image_size": [
+      192,
+      192
+    ]
+  },
+  {
+    "run": "tl_challenge/efficientnet_b0/experiment01",
+    "accuracy": 0.7072,
+    "f1_macro": 0.7166422194589303,
+    "ce": 0.8613012433052063,
+    "params": 4066224,
+    "best_epoch": 20,
+    "epochs_run": 20,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "tl_challenge/efficientnet_b0/experiment02",
+    "accuracy": 0.752,
+    "f1_macro": 0.767595129300531,
+    "ce": 1.1580517292022705,
+    "params": 4066224,
+    "best_epoch": 56,
+    "epochs_run": 76,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "tl_challenge/efficientnet_b0/experiment03",
+    "accuracy": 0.7696,
+    "f1_macro": 0.7925441861858311,
+    "ce": 0.7359158992767334,
+    "params": 4066224,
+    "best_epoch": 60,
+    "epochs_run": 80,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "tl_challenge/efficientnet_b0/experiment04",
+    "accuracy": 0.7797333333333333,
+    "f1_macro": 0.7933699758742184,
+    "ce": 0.671142578125,
+    "params": 4066224,
+    "best_epoch": 41,
+    "epochs_run": 61,
+    "image_size": [
+      128,
+      128
+    ]
+  },
+  {
+    "run": "tl_challenge/efficientnet_b0/experiment05",
+    "accuracy": 0.8016,
+    "f1_macro": 0.8201531188304336,
+    "ce": 0.623645544052124,
+    "params": 4066224,
+    "best_epoch": 43,
+    "epochs_run": 63,
+    "image_size": [
+      192,
+      192
+    ]
+  },
+  {
+    "run": "tl_challenge/efficientnet_b0/experiment06",
+    "accuracy": 0.8090666666666667,
+    "f1_macro": 0.8318301889919864,
+    "ce": 0.696174681186676,
+    "params": 4066224,
+    "best_epoch": 52,
+    "epochs_run": 72,
+    "image_size": [
+      192,
+      192
+    ]
+  },
+  {
+    "run": "tl_challenge/efficientnet_b0/experiment07",
+    "accuracy": 0.808,
+    "f1_macro": 0.8261700617967356,
+    "ce": 0.6037185192108154,
+    "params": 4066224,
+    "best_epoch": 18,
+    "epochs_run": 38,
+    "image_size": [
+      192,
+      192
+    ]
+  }
+]

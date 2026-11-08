@@ -1,0 +1,223 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{whale}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\graphicspath{{images/}}
+\setbeamertemplate{navigation symbols}{}
+\pdfstringdefDisableCommands{\def\\{ }}
+\title[CNN \& TL Challenges]{CNN \& Transfer Learning Challenges}
+\subtitle{Experimentos, ajustes y resultados en clasificación de imágenes}
+\author[Gómez, Miralles, Sánchez]{Gómez Hernández, Marco \\
+Miralles Retuerto, Pablo \\ Sánchez Carmona, Germán}
+\institute[UPM]{Universidad Politécnica de Madrid\\
+Máster Universitario en Inteligencia Artificial\\Visión por Computador}
+\date{8 de noviembre de 2026}
+
+\newcommand{\idea}[1]{\begin{center}\large\color{blue!65!black}#1\end{center}}
+\newcommand{\grafica}[2]{\begin{center}\includegraphics[width=\linewidth,height=#2,keepaspectratio]{#1}\end{center}}
+\begin{document}
+% 1: 15 s
+\begin{frame}\titlepage\end{frame}
+
+\section{CNN Challenge}
+% 2: 55 s
+\begin{frame}{CNN Challenge · Punto de partida: cuatro populares}
+\centering\small
+\textbf{Desde cero} · 128 px · batch 32 · AdamW · LR $10^{-3}$ · WD $10^{-4}$
+\grafica{populares_curvas.pdf}{4.05cm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.48\textwidth}\centering
+\textbf{Seguimos con ResNet18}\\\small 78,03\,\% · entrenamiento más rápido
+\end{column}
+\begin{column}{.48\textwidth}\centering
+\textbf{Y con EfficientNetB0}\\\small 77,97\,\% · menor sobreajuste inicial
+\end{column}
+\end{columns}
+\end{frame}
+
+% 3: 60 s
+\begin{frame}{CNN Challenge · Ajustes de las populares}
+\grafica{ajustes_curvas.pdf}{3.9cm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp02 · No mejoran}\\\small
+ResNet: WD $10^{-3}$, 78,03\,\%\\
+B0: LR $3\cdot10^{-4}$, 76,75\,\%
+\end{column}
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp03 · Smoothing 0.1}\\\small
+ResNet: \textbf{79,73\,\%}\\
+B0: \textbf{79,09\,\%}
+\end{column}
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp04 · ResNet a 192 px}\\\small
+Conserva smoothing 0.1\\
+\textbf{80,11\,\%}: mejor popular
+\end{column}
+\end{columns}
+\end{frame}
+
+% 4: 45 s
+\begin{frame}{CNN Challenge · Pasamos a una arquitectura propia}
+\begin{center}
+\begin{tikzpicture}[node distance=.25cm,box/.style={draw=blue!65!black,fill=blue!6,rounded corners,align=center,font=\small,minimum height=1cm},arr/.style={-{Latex[length=2mm]},thick,blue!65!black}]
+\node[box,minimum width=1.3cm] (in) {RGB\\$128^2$};
+\node[box,right=of in,minimum width=1.5cm] (stem) {Stem\\2 conv};
+\node[box,right=of stem,minimum width=1.65cm] (s1) {2 bloques SE\\32 canales};
+\node[box,right=of s1,minimum width=1.65cm] (s2) {2 bloques SE\\64 canales};
+\node[box,below=.45cm of s2,minimum width=1.65cm] (s3) {2 bloques SE\\128 canales};
+\node[box,left=of s3,minimum width=1.65cm] (s4) {2 bloques SE\\256 canales};
+\node[box,left=of s4,minimum width=1.5cm] (gap) {GAP};
+\node[box,left=of gap,minimum width=1.3cm] (out) {Dense13\\Softmax};
+\draw[arr] (in)--(stem);\draw[arr] (stem)--(s1);\draw[arr] (s1)--(s2);\draw[arr] (s2)--(s3);\draw[arr] (s3)--(s4);\draw[arr] (s4)--(gap);\draw[arr] (gap)--(out);
+\end{tikzpicture}
+\end{center}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{.48\textwidth}\centering
+{\LARGE\color{blue!65!black}2,86 M}\\\small parámetros
+\end{column}
+\begin{column}{.48\textwidth}\centering
+{\LARGE\color{blue!65!black}79,15\,\%}\\\small accuracy inicial · custom exp01
+\end{column}
+\end{columns}
+\vspace{.2cm}\centering\small Mismos hiperparámetros iniciales de las populares · sin preentrenamiento
+\end{frame}
+
+% 5: 50 s
+\begin{frame}{CNN Challenge · Custom: qué regularización conservar}
+\grafica{custom_inicio.pdf}{4.1cm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp01 · Referencia}\\79,15\,\%
+\end{column}
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp02 · Smoothing 0.1}\\79,04\,\% · se descarta
+\end{column}
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp03 · MixUp 0.2}\\\textbf{80,69\,\%} · se conserva
+\end{column}
+\end{columns}
+\end{frame}
+
+% 6: 45 s
+\begin{frame}{CNN Challenge · Custom: las dos últimas pruebas}
+\grafica{custom_final.pdf}{4.05cm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp03 · Referencia}\\\small MixUp 0.2 · 128 px\\\textbf{80,69\,\%}
+\end{column}
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp04 · MixUp 0.4}\\\small Mantiene 128 px\\80,16\,\% · no mejora
+\end{column}
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp05 · 192 px}\\\small Vuelve a MixUp 0.2\\79,47\,\% · no mejora
+\end{column}
+\end{columns}
+\end{frame}
+
+\section{TL Challenge}
+% 7: 55 s
+\begin{frame}{TL Challenge · Punto de partida: EfficientNetB0}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.48\textwidth}
+\begin{block}{¿Por qué EfficientNetB0?}
+\begin{itemize}
+\item Buenos resultados en CNN.
+\item Pesos ImageNet en Keras.
+\item ResNet18 no está en Keras Applications.
+\end{itemize}
+\end{block}
+\end{column}
+\begin{column}{.48\textwidth}
+\begin{block}{Exp01 · Extractor congelado}
+128 px · GAP + Dense13\\[6pt]
+Solo se entrena la cabeza\\[6pt]
+20 épocas · LR $10^{-3}$\\[6pt]
+\textbf{70,72\,\%} de accuracy
+\end{block}
+\end{column}
+\end{columns}
+\vspace{.3cm}
+\idea{Referencia B0 desde cero: \textbf{77,97\,\%}}
+\end{frame}
+
+% 8: 65 s
+\begin{frame}{TL Challenge · De los últimos bloques a toda la red}
+\centering\small 128 px · LR $10^{-5}$ · WD $10^{-4}$ · batch 32 · BN congeladas
+\grafica{tl_adaptacion.pdf}{3.95cm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp02 · FT parcial}\\\small Últimos bloques + cabeza\\\textbf{75,20\,\%}
+\end{column}
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp03 · + MixUp 0.2}\\\small Mantiene FT parcial\\\textbf{76,96\,\%}
+\end{column}
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp04 · FT completo}\\\small Conserva MixUp 0.2\\\textbf{77,97\,\%}: iguala scratch
+\end{column}
+\end{columns}
+\end{frame}
+
+% 9: 65 s
+\begin{frame}{TL Challenge · Resolución, learning rate y MixUp}
+\centering\small Se conservan FT completo salvo BN, batch 32 y WD $10^{-4}$
+\grafica{tl_ajustes_finales.pdf}{3.95cm}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp05 · 192 px}\\\small LR $10^{-5}$ · MixUp 0.2\\\textbf{80,16\,\%}: mejora
+\end{column}
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp06 · LR $3\cdot10^{-5}$}\\\small Mantiene 192 px y MixUp 0.2\\\textbf{80,91\,\%}: mejor accuracy
+\end{column}
+\begin{column}{.32\textwidth}\centering
+\textbf{Exp07 · MixUp 0.4}\\\small Mantiene 192 px y LR\\\textbf{80,80\,\%}: menor CE
+\end{column}
+\end{columns}
+\end{frame}
+
+% 10: 45 s
+\begin{frame}{TL Challenge · Errores del mejor modelo por accuracy}
+\grafica{confusion_tl06.pdf}{5.25cm}
+\end{frame}
+
+% 11: 55 s
+\begin{frame}{Balance · Mejores modelos de cada fase}
+\grafica{balance_final.pdf}{4.6cm}
+\idea{B0 TL exp06: \textbf{+2,93 pp} frente a B0 desde cero}
+\end{frame}
+
+% 12: 45 s
+\begin{frame}{Cierre · Qué configuraciones conservamos}
+\begin{center}
+\begin{minipage}{.88\textwidth}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{.47\textwidth}
+\begin{block}{CNN Challenge}
+\textbf{Popular: ResNet18 exp04}\\
+192 px · smoothing 0.1\\[8pt]
+\textbf{Custom: exp03}\\
+128 px · MixUp 0.2
+\end{block}
+\end{column}
+\begin{column}{.47\textwidth}
+\begin{block}{TL Challenge · Candidatos a envío}
+\textbf{B0 exp06: 80,91\,\%}\\
+Mejor accuracy y F1\\[8pt]
+\textbf{B0 exp07: 80,80\,\%}\\
+Accuracy similar, menor CE
+\end{block}
+\end{column}
+\end{columns}
+\end{minipage}
+\end{center}
+\vspace{.3cm}
+\idea{Conservar lo que mejora; descartar lo que no aporta}
+\end{frame}
+\end{document}
