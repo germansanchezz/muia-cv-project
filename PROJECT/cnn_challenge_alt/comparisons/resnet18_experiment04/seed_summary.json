@@ -1,0 +1,32 @@
+[
+  {
+    "runs": [
+      "popular_architectures/resnet18/experiment03"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7973333333333333,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.8076073180498297,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.8168300024917876,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/resnet18/experiment04"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.8010666666666667,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.8121715975057271,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.8223832912410093,
+    "f1_macro_std": null
+  }
+]
