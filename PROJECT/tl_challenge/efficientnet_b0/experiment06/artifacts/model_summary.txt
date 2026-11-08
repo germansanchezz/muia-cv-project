@@ -1,0 +1,22 @@
+Model: "efficientnet_b0_transfer"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ rgb_0_1 (InputLayer)        [(None, 192, 192, 3)]     0         
+                                                                 
+ imagenet_input_0_255 (Resc  (None, 192, 192, 3)       0         
+ aling)                                                          
+                                                                 
+ efficientnet_b0_backbone (  (None, 6, 6, 1280)        4049571   
+ Functional)                                                     
+                                                                 
+ global_pool (GlobalAverage  (None, 1280)              0         
+ Pooling2D)                                                      
+                                                                 
+ classification (Dense)      (None, 13)                16653     
+                                                                 
+=================================================================
+Total params: 4066224 (15.51 MB)
+Trainable params: 3982185 (15.19 MB)
+Non-trainable params: 84039 (328.28 KB)
+_________________________________________________________________

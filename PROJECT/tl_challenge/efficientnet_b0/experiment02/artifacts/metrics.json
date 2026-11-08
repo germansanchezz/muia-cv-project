@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "best_epoch": 56,
+  "epochs_run": 76,
+  "stage": "fine_tuning",
+  "checkpoint_stage": "fine_tuning",
+  "selected_from_source": false,
+  "best_epoch_this_stage": 56,
+  "best_epoch_global": 76,
+  "epochs_total": 96,
+  "trainable_params_stage": 3146537,
+  "fit_seconds_total": 1167.0515311319978,
+  "accuracy": 0.752,
+  "precision_macro": 0.7729222514445789,
+  "recall_macro": 0.7641218162500708,
+  "f1_macro": 0.767595129300531,
+  "f1_weighted": 0.7497231441920489,
+  "ap_macro": 0.8093639904191728,
+  "train_inference": {
+    "loss": 0.11265851557254791,
+    "accuracy": 0.9667477011680603,
+    "ce": 0.11265851557254791
+  },
+  "valid_inference": {
+    "loss": 1.1580517292022705,
+    "accuracy": 0.7519999742507935,
+    "ce": 1.1580517292022705
+  },
+  "accuracy_gap_pp": 21.474772691726685,
+  "params": 4066224,
+  "fit_seconds": 1012.2304421939989,
+  "predict_seconds": 1.2797163619979983,
+  "predict_ms_per_image": 0.682515393065599,
+  "class_metrics": [
+    {
+      "class": "Cargo plane",
+      "precision": 0.9661016949152542,
+      "recall": 0.9661016949152542,
+      "f1_dice": 0.9661016949152542,
+      "specificity": 0.998898678414097,
+      "average_precision": 0.9944359606384856,
+      "support": 59
+    },
+    {
+      "class": "Small car",
+      "precision": 0.7928176795580111,
+      "recall": 0.8723404255319149,
+      "f1_dice": 0.8306801736613604,
+      "specificity": 0.9514877102199224,
+      "average_precision": 0.8654519045245445,
+      "support": 329
+    },
+    {
+      "class": "Bus",
+      "precision": 0.5989010989010989,
+      "recall": 0.6264367816091954,
+      "f1_dice": 0.6123595505617978,
+      "specificity": 0.9570840681951793,
+      "average_precision": 0.6208109854747693,
+      "support": 174
+    },
+    {
+      "class": "Truck",
+      "precision": 0.49760765550239233,
+      "recall": 0.4315352697095436,
+      "f1_dice": 0.4622222222222222,
+      "specificity": 0.9357405140758874,
+      "average_precision": 0.4822047847877723,
+      "support": 241
+    },
+    {
+      "class": "Motorboat",
+      "precision": 0.7830188679245284,
+      "recall": 0.7614678899082569,
+      "f1_dice": 0.772093023255814,
+      "specificity": 0.9869762174405436,
+      "average_precision": 0.8423972979068689,
+      "support": 109
+    },
+    {
+      "class": "Fishing vessel",
+      "precision": 0.7307692307692307,
+      "recall": 0.7808219178082192,
+      "f1_dice": 0.7549668874172185,
+      "specificity": 0.98834628190899,
+      "average_precision": 0.8081904762440534,
+      "support": 73
+    },
+    {
+      "class": "Dump truck",
+      "precision": 0.6198347107438017,
+      "recall": 0.635593220338983,
+      "f1_dice": 0.6276150627615062,
+      "specificity": 0.9738190096755834,
+      "average_precision": 0.6449807211739985,
+      "support": 118
+    },
+    {
+      "class": "Excavator",
+      "precision": 0.85,
+      "recall": 0.8395061728395061,
+      "f1_dice": 0.84472049689441,
+      "specificity": 0.9933110367892977,
+      "average_precision": 0.9005337139521941,
+      "support": 81
+    },
+    {
+      "class": "Building",
+      "precision": 0.8610354223433242,
+      "recall": 0.8705234159779615,
+      "f1_dice": 0.8657534246575342,
+      "specificity": 0.9662698412698413,
+      "average_precision": 0.9311648067060456,
+      "support": 363
+    },
+    {
+      "class": "Helipad",
+      "precision": 0.7777777777777778,
+      "recall": 0.7777777777777778,
+      "f1_dice": 0.7777777777777778,
+      "specificity": 0.9989281886387996,
+      "average_precision": 0.847410091250671,
+      "support": 9
+    },
+    {
+      "class": "Storage tank",
+      "precision": 0.8978102189781022,
+      "recall": 0.8092105263157895,
+      "f1_dice": 0.8512110726643599,
+      "specificity": 0.991874637260592,
+      "average_precision": 0.917881395793808,
+      "support": 152
+    },
+    {
+      "class": "Shipping container",
+      "precision": 0.708029197080292,
+      "recall": 0.7185185185185186,
+      "f1_dice": 0.7132352941176471,
+      "specificity": 0.9770114942528736,
+      "average_precision": 0.7496081957286685,
+      "support": 135
+    },
+    {
+      "class": "Pylon",
+      "precision": 0.9642857142857143,
+      "recall": 0.84375,
+      "f1_dice": 0.9,
+      "specificity": 0.9994574064026045,
+      "average_precision": 0.9166615412673642,
+      "support": 32
+    }
+  ]
+}

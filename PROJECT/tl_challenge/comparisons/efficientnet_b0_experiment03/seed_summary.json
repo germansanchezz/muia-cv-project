@@ -1,0 +1,62 @@
+[
+  {
+    "runs": [
+      "cnn_challenge_alt/popular_architectures/efficientnet_b0/experiment01"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7797333333333333,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7920502285510858,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.78400298993672,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "tl_challenge/efficientnet_b0/experiment01"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7072,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7179860614909237,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.7166422194589303,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "tl_challenge/efficientnet_b0/experiment02"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.752,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.7641218162500708,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.767595129300531,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "tl_challenge/efficientnet_b0/experiment03"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7696,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.784440934753794,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.7925441861858311,
+    "f1_macro_std": null
+  }
+]

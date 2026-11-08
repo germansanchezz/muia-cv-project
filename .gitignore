@@ -7,6 +7,8 @@
 # Caché de imágenes reducidas del CNN challenge
 /PROJECT/cnn_challenge/.cache/
 /PROJECT/cnn_challenge_alt/.cache/
+/PROJECT/tl_challenge/.cache/
+/PROJECT/tl_challenge/.weights/
 
 **/model.keras
 
