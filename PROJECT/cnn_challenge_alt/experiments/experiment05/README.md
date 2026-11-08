@@ -10,4 +10,14 @@ Entrenamiento desde cero. Se crea o reutiliza la caché mmap de 192×192 conserv
 
 La sección 9 selecciona custom experiment05, custom experiment03 y ResNet18 experiment04. Destino: `comparisons/custom_experiment05/`. El mejor modelo, `prediction.json` obligatorio, artefactos y PDF se guardan aquí.
 
-La referencia tiene **80,69 % de accuracy y 82,27 % de F1 macro**. Se comprobará si 192×192 mejora validación y si compensa el coste. Estado: **preparado; entrenamiento pendiente**. Detalles y elección de alpha en el [registro general](../README.md).
+Estado: **completado**. Mejor checkpoint en la época **95**, de **115** ejecutadas:
+
+- Accuracy de validación: **79,47 %** (1.490/1.875 aciertos), **23 aciertos menos** que experiment03.
+- F1 macro: **81,02 %**, frente a 82,27 %; CE: **0,704**, frente a 0,695.
+- AP macro: **85,82 %**, frente a 86,38 %.
+- Train original en inferencia: **97,41 %**; **brecha: 17,94 puntos**, frente a 17,61.
+- Entrenamiento: **58,57 minutos**, frente a 39,18.
+
+**La mayor resolución no compensa en esta ejecución. Se conserva custom experiment03 a 128×128 y MixUp 0.2 como mejor modelo individual.** Bus y Dump truck explican buena parte de la pérdida de aciertos. La media 50/50 de probabilidades de ambas custom sí mejora de forma exploratoria en validación, pero exige dos modelos y no representa un entrenamiento individual mejor.
+
+[Métricas guardadas](artifacts/metrics.json). Análisis completo, combinación de probabilidades y posibles siguientes pruebas en el [registro general](../README.md). No se ha preparado otro experimento.

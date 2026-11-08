@@ -1,0 +1,47 @@
+[
+  {
+    "runs": [
+      "experiments/experiment05"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.7946666666666666,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.802295871268546,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.810173874790302,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "experiments/experiment03"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.8069333333333333,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.8185343440169098,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.8226856027806295,
+    "f1_macro_std": null
+  },
+  {
+    "runs": [
+      "popular_architectures/resnet18/experiment04"
+    ],
+    "seeds": [
+      42
+    ],
+    "n": 1,
+    "accuracy_mean": 0.8010666666666667,
+    "accuracy_std": null,
+    "recall_macro_mean": 0.8121715975057271,
+    "recall_macro_std": null,
+    "f1_macro_mean": 0.8223832912410093,
+    "f1_macro_std": null
+  }
+]

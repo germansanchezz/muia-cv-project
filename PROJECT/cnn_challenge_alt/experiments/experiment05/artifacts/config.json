@@ -70,7 +70,7 @@
     "stratify": null
   },
   "preprocessing": "rasterio-average-float32-rgb-div255-v1",
-  "data_load_seconds": 0.016967128998658154,
+  "data_load_seconds": 0.005601494998700218,
   "cache_mode": "mmap",
   "loss": "categorical_crossentropy",
   "augmentation_spec": {

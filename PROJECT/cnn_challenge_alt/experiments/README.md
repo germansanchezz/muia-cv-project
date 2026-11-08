@@ -33,7 +33,7 @@ En el protocolo inicial de experiment01, label smoothing es cero y la entrada es
 | [experiment02](experiment02/cnn_experiment02.ipynb) | La misma CNN `residual_se_v1` de experiment01 | Probar únicamente label smoothing 0.1 | Completado | [Métricas](experiment02/artifacts/metrics.json): accuracy 79,04 %, F1 macro 80,73 %, mejor época 66 |
 | [experiment03](experiment03/cnn_experiment03.ipynb) | La misma CNN `residual_se_v1` de experiment01 | MixUp alpha 0.2, 128×128 y sin label smoothing | Completado | [Métricas](experiment03/artifacts/metrics.json): accuracy 80,69 %, F1 macro 82,27 %, mejor época 97 |
 | [experiment04](experiment04/cnn_experiment04.ipynb) | La misma CNN `residual_se_v1` de experiment03 | MixUp alpha 0.2 → 0.4 como único cambio | Completado | [Métricas](experiment04/artifacts/metrics.json): accuracy 80,16 %, F1 macro 81,38 %, mejor época 77 |
-| [experiment05](experiment05/cnn_experiment05.ipynb) | La misma CNN `residual_se_v1` de experiment03 | Entrada 128×128 → 192×192, manteniendo MixUp alpha 0.2 | Preparado; sin entrenar | Pendientes |
+| [experiment05](experiment05/cnn_experiment05.ipynb) | La misma CNN `residual_se_v1` de experiment03 | Entrada 128×128 → 192×192, manteniendo MixUp alpha 0.2 | Completado | [Métricas](experiment05/artifacts/metrics.json): accuracy 79,47 %, F1 macro 81,02 %, mejor época 95 |
 
 ## Experiment01: diseño
 
@@ -280,19 +280,81 @@ La CE mínima de experiment04 es **0,640 en la época 82**, ligeramente posterio
 
 **Decisión:** experiment03 con alpha **0.2** continúa como mejor custom por accuracy/F1, aunque las diferencias de diez imágenes no demuestran superioridad general con una sola semilla y partición. Experiment04 se conserva como alternativa de mejor CE y menor confianza extrema; sus resultados no se descartan ni se sobrescriben.
 
-## Experiment05 · 192×192 con MixUp alpha 0.2 · preparado
+## Experiment05 · 192×192 con MixUp alpha 0.2 · completado
 
-Se prepara el [notebook de experiment05](experiment05/cnn_experiment05.ipynb) a partir de **custom experiment03**, no de experiment04. **Único hiperparámetro cambiado: resolución `128×128 → 192×192`.** Se mantiene la configuración elegida: **MixUp alpha 0.2**, label smoothing **0.0**, sin Dropout adicional ni L2.
+Se ejecutó el [notebook de experiment05](experiment05/cnn_experiment05.ipynb) a partir de **custom experiment03**, no de experiment04. **Único hiperparámetro cambiado: resolución `128×128 → 192×192`.** Se mantiene la configuración elegida: **MixUp alpha 0.2**, label smoothing **0.0**, sin Dropout adicional ni L2.
 
 La arquitectura sigue siendo `residual_se_v1`, canales 32/64/128/256, bloques 2/2/2/2 con SE y **2.857.125 parámetros**. Los mapas finales pasan de 8×8×256 a **12×12×256**; GAP permite conservar el mismo número de parámetros. Se mantienen batch 32, AdamW, LR 0.001, weight decay 0.0001, máximo 200 épocas, semilla 42, reparto, aumentación y callbacks.
 
 La hipótesis es que el detalle adicional mejore la clasificación, especialmente entre vehículos, y compense el mayor coste. Se evaluará frente a **80,69 % de accuracy y 82,27 % de F1 macro** de experiment03. No se presupone una ganancia: se compararán CE/AP, brecha de datos originales, clases y tiempo, además de accuracy/F1.
 
-Se entrenará desde cero, sin cargar checkpoints anteriores. La caché mmap de 192×192 se crea o reutiliza separadamente de la de 128×128. El notebook guarda el mejor `model.keras`, obligatoriamente `prediction.json`, artefactos y PDF en `experiment05/`.
+Se entrenó desde cero, sin cargar checkpoints anteriores. La caché mmap de 192×192 se mantiene separada de la de 128×128. El notebook guarda el mejor `model.keras`, obligatoriamente `prediction.json`, artefactos y PDF en `experiment05/`.
 
 `SELECT_RUNS` contiene **custom experiment05 + custom experiment03 + ResNet18 experiment04**. La referencia custom aísla resolución; la popular también usa 192×192, pero label smoothing 0.1 en lugar de MixUp, por lo que no aísla arquitectura. Destino: `cnn_challenge_alt/comparisons/custom_experiment05/`.
 
-**Estado: preparado; no se ha realizado un entrenamiento completo ni hay nuevos resultados de validación.** Esta es la prueba de resolución reservada para la parte final. Los resultados de las configuraciones anteriores se mantienen como referencia histórica.
+### Resultados: subir a 192×192 no mejora esta custom
+
+**Experiment05 empeora frente a experiment03. Se conserva la configuración de 128×128 con MixUp alpha 0.2 como mejor modelo custom individual.** La resolución fue el único hiperparámetro cambiado: coinciden arquitectura, número de parámetros, pesos iniciales, resto de configuración y entorno registrado.
+
+Los artefactos son coherentes: accuracy, F1, AP, matrices de confusión, orden de validación, reparto, hashes y mejor época se han comprobado a partir de las probabilidades e historiales. Las configuraciones guardadas coinciden con las celdas de los notebooks, no hay salidas de error y experiment05 generó **2.365 predicciones de test**. La comparación CSV concuerda con las métricas individuales.
+
+| Métrica | Experiment03 · 128×128 | Experiment05 · 192×192 |
+|---|---:|---:|
+| Accuracy validación (%) | 80,69 | 79,47 |
+| F1 macro (%) | 82,27 | 81,02 |
+| CE sin suavizado ↓ | 0,695 | 0,704 |
+| AP macro (%) | 86,38 | 85,82 |
+| Accuracy train original (%) | 98,30 | 97,41 |
+| Brecha train–validación (puntos) | 17,61 | 17,94 |
+| Entrenamiento (min) | 39,18 | 58,57 |
+| Tiempo medio por época (s) | 20,09 | 30,56 |
+| Aciertos / validación | 1.513 / 1.875 | 1.490 / 1.875 |
+| Mejor época / ejecutadas | 97 / 117 | 95 / 115 |
+| Parámetros | 2.857.125 | 2.857.125 |
+
+Fuentes: [métricas experiment05](experiment05/artifacts/metrics.json), [tabla comparativa](../comparisons/custom_experiment05/comparison.csv), [curvas](../comparisons/custom_experiment05/comparison_curves.pdf), [métricas](../comparisons/custom_experiment05/comparison_metrics.pdf), [recall por clase](../comparisons/custom_experiment05/comparison_class_recall.pdf) y [coste](../comparisons/custom_experiment05/comparison_cost.pdf).
+
+La accuracy pierde **1,23 puntos y 23 aciertos**; el F1 macro pierde **1,25 puntos**. CE empeora ligeramente (**0,695 → 0,704**) y AP baja **0,56 puntos**. La brecha final, calculada sin MixUp ni aumentación, sube de **17,61 a 17,94 puntos**: **97,41 % de train original − 79,47 % de validación**. El mayor tamaño de entrada no resuelve el sobreajuste ni la clasificación de esta ejecución.
+
+### Dónde se pierde rendimiento y cuánto cuesta
+
+La pérdida se concentra en vehículos: **Bus pierde 23 verdaderos positivos**, y su F1 baja de **69,66 % a 65,58 %**; **Dump truck pierde diez**, con F1 **73,59 % → 64,66 %**. Excavator baja de **91,14 % a 85,89 %** de F1. Hay ganancias en Small car (seis positivos adicionales), Truck (cuatro), Shipping container (cuatro) y Storage tank (dos), pero no compensan. La hipótesis de que mayor resolución mejorase el reconocimiento de vehículos no queda respaldada globalmente.
+
+Experiment05 corrige 119 errores de experiment03, pero pierde 142 aciertos. Entre las confusiones más frecuentes aparecen Truck → Small car (39), Dump truck → Truck (28) y Bus → Truck (28). Los errores con confianza superior al 99 % pasan de 12 a 16; los superiores al 90 %, de 87 a 88. No se observa una mejora de esos extremos.
+
+La CE mínima del historial es **0,659 en la época 76**, prácticamente igual y ligeramente peor que la mínima de experiment03 (0,657). La mejor accuracy se alcanza en la época 95 y EarlyStopping termina en la 115, 20 después y sin alcanzar el máximo 200. No hay evidencia en esta curva de que simplemente añadir más épocas sea la solución.
+
+El coste aumenta de **39,18 a 58,57 minutos**, aproximadamente un **49 % más**, pese a ejecutar dos épocas menos. El promedio por época pasa de **20,09 a 30,56 segundos**. El tiempo de inferencia de validación registrado también sube (0,341 → 0,526 ms/imagen), aunque una única pasada no es un benchmark controlado. **En estas ejecuciones, aumentar resolución no compensa: exige más cómputo y empeora las métricas principales.**
+
+### Balance tras los cinco entrenamientos custom
+
+**El mejor modelo individual sigue siendo experiment03:** CNN `residual_se_v1`, 128×128, MixUp alpha **0.2**, sin label smoothing ni Dropout adicional, AdamW con LR 0.001 y weight decay 0.0001. Mantiene **80,69 % de accuracy y 82,27 % de F1 macro** con 2.857.125 parámetros.
+
+Label smoothing 0.1 no aportó una mejora general en experiment02; MixUp 0.2 sí mejoró la referencia inicial; MixUp 0.4 mejoró CE y brecha a costa de accuracy/F1; 192×192 no mejoró el resultado individual. Esta es la conclusión de las ejecuciones observadas, no una regla universal sobre las técnicas. Se conservan todos los resultados, incluida la custom de 192×192, porque comete errores diferentes.
+
+### Diagnóstico adicional sin entrenar: combinar probabilidades
+
+Se calculó una **media aritmética fija 50/50 de probabilidades de validación** de dos modelos, alineando nombres de imagen y clases. No se ajustaron pesos ni se generaron predicciones de test para estas combinaciones. Se examinaron estas dos parejas, como análisis exploratorio sobre la misma validación ya usada para seleccionar modelos:
+
+| Combinación 50/50 | Aciertos / 1.875 | Accuracy (%) | F1 macro (%) | CE ↓ | AP macro (%) |
+|---|---:|---:|---:|---:|---:|
+| Custom experiment03 + custom experiment05 | 1.533 | 81,76 | 83,27 | 0,596 | 88,48 |
+| Custom experiment03 + ResNet18 experiment04 | 1.541 | 82,19 | 83,80 | 0,613 | 88,87 |
+
+Fuentes: [probabilidades custom03](experiment03/artifacts/validation_predictions.npz), [probabilidades custom05](experiment05/artifacts/validation_predictions.npz) y [probabilidades ResNet18](../popular_architectures/resnet18/experiment04/artifacts/validation_predictions.npz). Las medias se evaluaron directamente en memoria durante la revisión; no son métricas de nuevos entrenamientos ni se han añadido a los CSV de modelos individuales.
+
+Las dos custom juntas ganan **20 aciertos** respecto a custom03 sola, aunque custom05 individual sea peor. Esto revela complementariedad de errores y ofrece una opción sin otro entrenamiento **si el objetivo permite un ensemble**. La combinación con ResNet18 mejora aún más, pero deja de ser una solución exclusivamente custom. En ambos casos hay que ejecutar dos modelos en inferencia: no se conserva el coste de un modelo individual. Estos resultados no demuestran una mejora en test ni una ventaja estadística; reutilizan la misma validación y requieren una evaluación independiente antes de generalizar.
+
+### ¿Merece la pena otra prueba?
+
+No seguiría aumentando la resolución ni el número máximo de épocas. Si se permite combinar modelos, la media 50/50 ya observada es una opción concreta antes de gastar tiempo en otro entrenamiento; el uso de ensembles tiene antecedentes como [Deep Ensembles](https://proceedings.neurips.cc/paper_files/paper/2017/hash/9ef2ed4b7fd2c810847ffa5fa85bce38-Abstract.html), sin que sus resultados se puedan extrapolar automáticamente a este proyecto.
+
+**Si se busca mejorar un único modelo, haría como máximo una prueba adicional de Dropout `0.2` después de GAP, partiendo de experiment03.** Se mantendrían 128×128, MixUp 0.2, LR, weight decay y demás protocolo. El único cambio sería Dropout: una regularización distinta de los ajustes ya probados, sin ampliar mapas de características ni parámetros aprendidos. [Dropout](https://jmlr.org/papers/v15/srivastava14a.html) desactiva unidades durante entrenamiento; en nuestra red, su posible beneficio tendría que comprobarse, no deducirse solo de la brecha. Se conservaría únicamente si mejora validación o un compromiso de métricas relevante.
+
+La recomendación no implica que otra prueba vaya a superar el 80,69 %. Si se da por terminada la fase, **experiment03 ya es una referencia defendible y competitiva**; confirmar su estabilidad con otra semilla aportaría más evidencia que seguir acumulando ajustes sobre la misma partición. La pequeña ventaja individual frente a ResNet18 tampoco demuestra superioridad general.
+
+**No se ha creado experiment06 ni iniciado otro entrenamiento.** Los notebooks y artefactos de las ejecuciones se mantienen; esta revisión solo actualiza la documentación y calcula el diagnóstico de medias en validación.
+
 
 
 
